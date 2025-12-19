@@ -5396,7 +5396,7 @@ end
             Library.RegistryMap[TopBarLabelStroke].Properties.Color = Tab.WarningBox.IsNormal == true and "Black" or nil
         end
 
-        function Tab:ShowTab()
+        function Tab.ShowTab()
             Library.ActiveTab = Name
             for _, Tab in next, Window.Tabs do
                 Tab:HideTab()
@@ -5417,7 +5417,7 @@ end
             Library.RegistryMap[TabButton].Properties.BackgroundColor3 = 'BackgroundColor'
             TabFrame.Visible = false
         end
-        Tab.Hide = Tab:HideTab
+        Tab.Hide = Tab.HideTab
 
         function Tab:SetLayoutOrder(Position)
             TabButton.LayoutOrder = Position
@@ -7425,16 +7425,24 @@ Library:GiveSignal(RunService.RenderStepped:Connect(function()
     end
 end))
 
-Library:CreateWindow = function(...)
+local function CreateWindowWithSettings(...)
     local Window = Library.CreateWindow(...)
     
-    Window:AddTab("设置"):AddLeftGroupbox("界面设置"):AddToggle("UIBlur", {
+    local SettingsTab = Window:AddTab("设置")
+    local InterfaceGroup = SettingsTab:AddLeftGroupbox("界面设置")
+    
+    InterfaceGroup:AddToggle("UIBlur", {
         Text = "背景模糊",
         Default = Library.BlurEnabled,
         Callback = function(Value)
             Library.BlurEnabled = Value
+            if not Value and Lighting:FindFirstChild("LinoriaBlur") then
+                Lighting.LinoriaBlur:Destroy()
+            end
         end
-    }):AddToggle("UIGlow", {
+    })
+    
+    InterfaceGroup:AddToggle("UIGlow", {
         Text = "发光效果",
         Default = Library.GlowEnabled,
         Callback = function(Value)
@@ -7443,13 +7451,17 @@ Library:CreateWindow = function(...)
                 Window.Holder.OuterGlow.Visible = Value
             end
         end
-    }):AddToggle("UIAnimations", {
+    })
+    
+    InterfaceGroup:AddToggle("UIAnimations", {
         Text = "动画效果",
         Default = Library.AnimationsEnabled,
         Callback = function(Value)
             Library.AnimationsEnabled = Value
         end
-    }):AddSlider("UIDPIScale", {
+    })
+    
+    InterfaceGroup:AddSlider("UIDPIScale", {
         Text = "界面缩放",
         Default = 100,
         Min = 50,
@@ -7464,8 +7476,14 @@ Library:CreateWindow = function(...)
     return Window
 end
 
+Library.CreateWindow = CreateWindowWithSettings
+
 Library:Notify("Linoria 库已加载完成!", 3)
 
 getgenv().Linoria = Library
-if getgenv().skip_getgenv_linoria ~= true then getgenv().Library = Library end
+if getgenv().skip_getgenv_linoria ~= true then 
+    getgenv().Library = Library 
+end
+
+end
 return Library
