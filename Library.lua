@@ -6093,6 +6093,1379 @@ Library:GiveSignal(RunService.RenderStepped:Connect(function(Delta)
     end
 end))
 
+function Library:SetTheme(ThemeName)
+    if typeof(ThemeName) == "string" then
+        local Theme = Library.Themes[ThemeName]
+        if Theme then
+            for Property, Value in next, Theme do
+                Library[Property] = Value
+            end
+            Library:UpdateColorsUsingRegistry()
+            Library:AttemptSave()
+        end
+    end
+end
+
+function Library:AddTheme(ThemeName, ThemeData)
+    Library.Themes[ThemeName] = ThemeData
+end
+
+Library.Themes = {
+    Default = {
+        FontColor = Color3.fromRGB(255, 255, 255);
+        MainColor = Color3.fromRGB(28, 28, 28);
+        BackgroundColor = Color3.fromRGB(20, 20, 20);
+        SecondaryColor = Color3.fromRGB(38, 38, 38);
+        AccentColor = Color3.fromRGB(0, 170, 255);
+        OutlineColor = Color3.fromRGB(60, 60, 60);
+        RiskColor = Color3.fromRGB(255, 50, 50);
+    },
+    Dark = {
+        FontColor = Color3.fromRGB(240, 240, 240);
+        MainColor = Color3.fromRGB(18, 18, 18);
+        BackgroundColor = Color3.fromRGB(10, 10, 10);
+        SecondaryColor = Color3.fromRGB(28, 28, 28);
+        AccentColor = Color3.fromRGB(0, 150, 235);
+        OutlineColor = Color3.fromRGB(50, 50, 50);
+        RiskColor = Color3.fromRGB(255, 40, 40);
+    },
+    Light = {
+        FontColor = Color3.fromRGB(30, 30, 30);
+        MainColor = Color3.fromRGB(245, 245, 245);
+        BackgroundColor = Color3.fromRGB(230, 230, 230);
+        SecondaryColor = Color3.fromRGB(220, 220, 220);
+        AccentColor = Color3.fromRGB(0, 120, 215);
+        OutlineColor = Color3.fromRGB(180, 180, 180);
+        RiskColor = Color3.fromRGB(220, 30, 30);
+    },
+    Purple = {
+        FontColor = Color3.fromRGB(255, 255, 255);
+        MainColor = Color3.fromRGB(40, 20, 50);
+        BackgroundColor = Color3.fromRGB(30, 15, 40);
+        SecondaryColor = Color3.fromRGB(50, 25, 60);
+        AccentColor = Color3.fromRGB(170, 0, 255);
+        OutlineColor = Color3.fromRGB(70, 35, 80);
+        RiskColor = Color3.fromRGB(255, 50, 50);
+    },
+    Green = {
+        FontColor = Color3.fromRGB(255, 255, 255);
+        MainColor = Color3.fromRGB(20, 40, 20);
+        BackgroundColor = Color3.fromRGB(15, 30, 15);
+        SecondaryColor = Color3.fromRGB(25, 50, 25);
+        AccentColor = Color3.fromRGB(0, 255, 100);
+        OutlineColor = Color3.fromRGB(35, 60, 35);
+        RiskColor = Color3.fromRGB(255, 50, 50);
+    }
+}
+
+local SaveManager = {}
+do
+    SaveManager.Folder = "LinoriaLibrary"
+    SaveManager.Ignore = {}
+    SaveManager.Parser = {
+        Toggle = function(idx, val) return tostring(val) end,
+        ColorPicker = function(idx, val) return Color3.toHex(val) end,
+        KeyPicker = function(idx, val) return val end,
+        Slider = function(idx, val) return tostring(val) end,
+        Dropdown = function(idx, val)
+            if typeof(val) == "table" then
+                local result = ""
+                for value, enabled in next, val do
+                    if enabled then
+                        result = result .. tostring(value) .. ", "
+                    end
+                end
+                return result:sub(1, -3)
+            else
+                return tostring(val)
+            end
+        end,
+        Input = function(idx, val) return tostring(val) end
+    }
+
+    SaveManager.Defaults = {}
+
+    function SaveManager:SetFolder(Folder)
+        self.Folder = Folder
+    end
+
+    function SaveManager:SetIgnore(idx)
+        self.Ignore[idx] = true
+    end
+
+    function SaveManager:SetParser(Type, Parser)
+        self.Parser[Type] = Parser
+    end
+
+    function SaveManager:Save(idx)
+        if not isfolder or not writefile then return end
+
+        local Data = {}
+        local AllowSave = true
+
+        for idx, Option in next, Options do
+            if self.Ignore[idx] then continue end
+
+            local Parser = self.Parser[Option.Type]
+            if Parser then
+                Data[idx] = Parser(idx, Option.Value)
+            end
+        end
+
+        for idx, Toggle in next, Toggles do
+            if self.Ignore[idx] then continue end
+            Data[idx] = tostring(Toggle.Value)
+        end
+
+        local Success, Encoded = pcall(function()
+            return game:GetService("HttpService"):JSONEncode(Data)
+        end)
+
+        if Success and AllowSave then
+            if not isfolder(self.Folder) then
+                makefolder(self.Folder)
+            end
+
+            writefile(self.Folder .. "/settings.txt", Encoded)
+        end
+    end
+
+    function SaveManager:Load(idx)
+        if not isfolder or not isfile then return end
+
+        local File = self.Folder .. "/settings.txt"
+        if not isfile(File) then return false end
+
+        local Success, Decoded = pcall(function()
+            return game:GetService("HttpService"):JSONDecode(readfile(File))
+        end)
+
+        if not Success then return false end
+
+        for idx, Value in next, Decoded do
+            local Option = Options[idx]
+            local Toggle = Toggles[idx]
+
+            if Option then
+                if Option.Type == "Toggle" then
+                    Option:SetValue(Value == "true")
+
+                elseif Option.Type == "ColorPicker" then
+                    Option:SetValueRGB(Color3.fromHex(Value))
+
+                elseif Option.Type == "KeyPicker" then
+                    Option:SetValue({Value, Option.Mode, Option.Modifiers})
+
+                elseif Option.Type == "Slider" then
+                    Option:SetValue(tonumber(Value))
+
+                elseif Option.Type == "Dropdown" then
+                    if Option.Multi then
+                        local Table = {}
+                        for value in Value:gmatch("([^,]+)") do
+                            Table[value] = true
+                        end
+                        Option:SetValue(Table)
+                    else
+                        Option:SetValue(Value)
+                    end
+
+                elseif Option.Type == "Input" then
+                    Option:SetValue(Value)
+                end
+            elseif Toggle then
+                Toggle:SetValue(Value == "true")
+            end
+        end
+
+        return true
+    end
+
+    Library.SaveManager = SaveManager
+end
+
+local ThemeManager = {}
+do
+    ThemeManager.Folder = "LinoriaLibrary"
+    ThemeManager.Themes = {}
+    ThemeManager.Loaded = {}
+
+    function ThemeManager:SetFolder(Folder)
+        self.Folder = Folder
+    end
+
+    function ThemeManager:ApplyTheme(Theme)
+        if Library.Themes[Theme] then
+            Library:SetTheme(Theme)
+            self.Loaded.Theme = Theme
+        end
+    end
+
+    function ThemeManager:Save()
+        if not isfolder or not writefile then return end
+
+        local Data = {
+            Theme = self.Loaded.Theme or "Default",
+            AccentColor = Library.AccentColor:ToHex()
+        }
+
+        local Success, Encoded = pcall(function()
+            return game:GetService("HttpService"):JSONEncode(Data)
+        end)
+
+        if Success then
+            if not isfolder(self.Folder) then
+                makefolder(self.Folder)
+            end
+
+            writefile(self.Folder .. "/theme.txt", Encoded)
+        end
+    end
+
+    function ThemeManager:Load()
+        if not isfolder or not isfile then return end
+
+        local File = self.Folder .. "/theme.txt"
+        if not isfile(File) then return false end
+
+        local Success, Decoded = pcall(function()
+            return game:GetService("HttpService"):JSONDecode(readfile(File))
+        end)
+
+        if not Success then return false end
+
+        if Decoded.Theme then
+            self:ApplyTheme(Decoded.Theme)
+        end
+
+        if Decoded.AccentColor then
+            Library.AccentColor = Color3.fromHex(Decoded.AccentColor)
+            Library.AccentColorDark = Library:GetDarkerColor(Library.AccentColor)
+            Library:UpdateColorsUsingRegistry()
+        end
+
+        return true
+    end
+
+    function ThemeManager:CreateThemePicker(Parent)
+        local ThemePicker = Parent:AddDropdown("ThemePicker", {
+            Text = "主题",
+            Values = {"Default", "Dark", "Light", "Purple", "Green"},
+            Default = "Default",
+            Callback = function(Value)
+                self:ApplyTheme(Value)
+                self:Save()
+            end
+        })
+
+        local ColorPicker = Parent:AddColorPicker("AccentColor", {
+            Text = "强调色",
+            Default = Library.AccentColor,
+            Callback = function(Color)
+                Library.AccentColor = Color
+                Library.AccentColorDark = Library:GetDarkerColor(Color)
+                Library:UpdateColorsUsingRegistry()
+                self:Save()
+            end
+        })
+
+        return ThemePicker, ColorPicker
+    end
+
+    Library.ThemeManager = ThemeManager
+end
+
+local AutoUpdate = {}
+do
+    AutoUpdate.Enabled = false
+    AutoUpdate.Interval = 60
+    AutoUpdate.LastCheck = 0
+    AutoUpdate.Callbacks = {}
+
+    function AutoUpdate:Enable()
+        self.Enabled = true
+        self:Start()
+    end
+
+    function AutoUpdate:Disable()
+        self.Enabled = false
+    end
+
+    function AutoUpdate:SetInterval(Seconds)
+        self.Interval = Seconds
+    end
+
+    function AutoUpdate:AddCallback(Callback)
+        table.insert(self.Callbacks, Callback)
+    end
+
+    function AutoUpdate:Start()
+        if not self.Enabled then return end
+
+        task.spawn(function()
+            while self.Enabled and not Library.Unloaded do
+                local CurrentTime = tick()
+                if CurrentTime - self.LastCheck >= self.Interval then
+                    self.LastCheck = CurrentTime
+                    
+                    for _, Callback in next, self.Callbacks do
+                        Library:SafeCallback(Callback)
+                    end
+
+                    Library:AttemptSave()
+                end
+                task.wait(1)
+            end
+        end)
+    end
+
+    Library.AutoUpdate = AutoUpdate
+end
+
+local Rainbow = {}
+do
+    Rainbow.Enabled = false
+    Rainbow.Speed = 1
+    Rainbow.Accent = true
+    Rainbow.Hue = 0
+
+    function Rainbow:Enable()
+        self.Enabled = true
+        self:Start()
+    end
+
+    function Rainbow:Disable()
+        self.Enabled = false
+    end
+
+    function Rainbow:SetSpeed(Speed)
+        self.Speed = Speed / 100
+    end
+
+    function Rainbow:ToggleAccent(State)
+        self.Accent = State
+    end
+
+    function Rainbow:Start()
+        if not self.Enabled then return end
+
+        task.spawn(function()
+            while self.Enabled and not Library.Unloaded do
+                self.Hue = (self.Hue + (0.0001 * self.Speed)) % 1
+                
+                if self.Accent then
+                    Library.AccentColor = Color3.fromHSV(self.Hue, 0.8, 1)
+                    Library.AccentColorDark = Library:GetDarkerColor(Library.AccentColor)
+                    Library:UpdateColorsUsingRegistry()
+                end
+
+                task.wait()
+            end
+        end)
+    end
+
+    Library.Rainbow = Rainbow
+end
+
+function Library:CreateEffect(Instance, EffectType, Properties)
+    if not Library.AnimationsEnabled then return end
+
+    local Effect = Instance:Clone()
+    Effect.Parent = Instance.Parent
+    Effect.ZIndex = Instance.ZIndex + 10
+    
+    if EffectType == "Ripple" then
+        Effect.BackgroundTransparency = 0.8
+        Effect.Size = UDim2.new(0, 0, 0, 0)
+        Effect.Position = UDim2.new(0.5, 0, 0.5, 0)
+        Effect.AnchorPoint = Vector2.new(0.5, 0.5)
+        
+        TweenService:Create(Effect, TweenInfo.new(0.5, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+            Size = UDim2.new(2, 0, 2, 0),
+            BackgroundTransparency = 1
+        }):Play()
+        
+        task.delay(0.5, function()
+            Effect:Destroy()
+        end)
+        
+    elseif EffectType == "Pulse" then
+        local OriginalSize = Effect.Size
+        Effect.BackgroundTransparency = 0.5
+        
+        TweenService:Create(Effect, TweenInfo.new(0.3, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
+            Size = OriginalSize * 1.1,
+            BackgroundTransparency = 1
+        }):Play()
+        
+        task.delay(0.3, function()
+            Effect:Destroy()
+        end)
+    end
+    
+    return Effect
+end
+
+function Library:CreateAdvancedNotification(Title, Description, Options)
+    local DefaultOptions = {
+        Time = 5,
+        Sound = true,
+        SoundId = 6672131910,
+        Icon = nil,
+        Color = Library.AccentColor,
+        OnClick = nil,
+        OnClose = nil
+    }
+    
+    Options = Library:Validate(Options or {}, DefaultOptions)
+    
+    local Notification = Library:Notify({
+        Title = Title,
+        Description = Description,
+        Time = Options.Time,
+        SoundId = Options.Sound and Options.SoundId or nil,
+        Icon = Options.Icon,
+        Persist = Options.Time == 0
+    })
+    
+    if Options.Color then
+        task.spawn(function()
+            task.wait(0.1)
+            for _, Child in next, Notification.Tooltip:GetDescendants() do
+                if Child:IsA("Frame") and Child.Name == "SideColor" then
+                    Child.BackgroundColor3 = Options.Color
+                end
+            end
+        end)
+    end
+    
+    if Options.OnClick and typeof(Options.OnClick) == "function" then
+        Notification.Tooltip.InputBegan:Connect(function(Input)
+            if Input.UserInputType == Enum.UserInputType.MouseButton1 then
+                Options.OnClick(Notification)
+            end
+        end)
+    end
+    
+    if Options.OnClose and typeof(Options.OnClose) == "function" then
+        local Connection
+        Connection = Notification.Tooltip.AncestryChanged:Connect(function()
+            if not Notification.Tooltip.Parent then
+                Options.OnClose()
+                if Connection then
+                    Connection:Disconnect()
+                end
+            end
+        end)
+    end
+    
+    return Notification
+end
+
+function Library:CreateConfirmation(Title, Message, ConfirmText, CancelText, Callback)
+    local Confirmation = {
+        Result = nil,
+        Closed = false
+    }
+    
+    local Modal = Library:Create('Frame', {
+        BackgroundColor3 = Color3.new(0, 0, 0);
+        BackgroundTransparency = 0.5;
+        Size = UDim2.new(1, 0, 1, 0);
+        ZIndex = 300;
+        Parent = ScreenGui;
+    })
+    
+    local Container = Library:Create('Frame', {
+        AnchorPoint = Vector2.new(0.5, 0.5);
+        BackgroundColor3 = Library.MainColor;
+        BorderColor3 = Library.AccentColor;
+        Position = UDim2.new(0.5, 0, 0.5, 0);
+        Size = UDim2.new(0, 300, 0, 150);
+        ZIndex = 301;
+        Parent = Modal;
+    })
+    
+    local UICorner = Library:Create('UICorner', {
+        CornerRadius = UDim.new(0, 8);
+        Parent = Container;
+    })
+    
+    local UIStroke = Library:Create('UIStroke', {
+        Color = Library.AccentColor;
+        Thickness = 1;
+        Parent = Container;
+    })
+    
+    local TitleLabel = Library:CreateLabel({
+        Position = UDim2.new(0, 10, 0, 10);
+        Size = UDim2.new(1, -20, 0, 30);
+        Text = Title;
+        TextSize = 18;
+        TextXAlignment = Enum.TextXAlignment.Center;
+        ZIndex = 302;
+        Parent = Container;
+    })
+    
+    local MessageLabel = Library:CreateLabel({
+        Position = UDim2.new(0, 20, 0, 50);
+        Size = UDim2.new(1, -40, 0, 50);
+        Text = Message;
+        TextSize = 14;
+        TextWrapped = true;
+        TextXAlignment = Enum.TextXAlignment.Center;
+        ZIndex = 302;
+        Parent = Container;
+    })
+    
+    local ButtonContainer = Library:Create('Frame', {
+        BackgroundTransparency = 1;
+        Position = UDim2.new(0, 10, 1, -50);
+        Size = UDim2.new(1, -20, 0, 40);
+        ZIndex = 302;
+        Parent = Container;
+    })
+    
+    Library:Create('UIListLayout', {
+        FillDirection = Enum.FillDirection.Horizontal;
+        HorizontalAlignment = Enum.HorizontalAlignment.Center;
+        VerticalAlignment = Enum.VerticalAlignment.Center;
+        SortOrder = Enum.SortOrder.LayoutOrder;
+        Padding = UDim.new(0, 10);
+        Parent = ButtonContainer;
+    })
+    
+    local ConfirmButton = Library:Create('TextButton', {
+        BackgroundColor3 = Library.AccentColor;
+        BorderColor3 = Library.AccentColorDark;
+        Size = UDim2.new(0, 100, 0, 30);
+        Text = ConfirmText or "确认";
+        TextColor3 = Color3.new(1, 1, 1);
+        TextSize = 14;
+        ZIndex = 303;
+        Parent = ButtonContainer;
+    })
+    
+    local ConfirmUICorner = Library:Create('UICorner', {
+        CornerRadius = UDim.new(0, 4);
+        Parent = ConfirmButton;
+    })
+    
+    local CancelButton = Library:Create('TextButton', {
+        BackgroundColor3 = Library.SecondaryColor;
+        BorderColor3 = Library.OutlineColor;
+        Size = UDim2.new(0, 100, 0, 30);
+        Text = CancelText or "取消";
+        TextColor3 = Library.FontColor;
+        TextSize = 14;
+        ZIndex = 303;
+        Parent = ButtonContainer;
+    })
+    
+    local CancelUICorner = Library:Create('UICorner', {
+        CornerRadius = UDim.new(0, 4);
+        Parent = CancelButton;
+    })
+    
+    local function Close(Result)
+        if Confirmation.Closed then return end
+        Confirmation.Result = Result
+        Confirmation.Closed = true
+        
+        TweenService:Create(Container, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+            Size = UDim2.new(0, 0, 0, 0)
+        }):Play()
+        
+        TweenService:Create(Modal, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+            BackgroundTransparency = 1
+        }):Play()
+        
+        task.delay(0.3, function()
+            Modal:Destroy()
+            if Callback then
+                Callback(Result)
+            end
+        end)
+    end
+    
+    ConfirmButton.MouseButton1Click:Connect(function()
+        Close(true)
+    end)
+    
+    CancelButton.MouseButton1Click:Connect(function()
+        Close(false)
+    end)
+    
+    Modal.InputBegan:Connect(function(Input)
+        if Input.UserInputType == Enum.UserInputType.MouseButton1 then
+            local AbsPos, AbsSize = Container.AbsolutePosition, Container.AbsoluteSize
+            local MousePos = Input.Position
+            
+            if MousePos.X < AbsPos.X or MousePos.X > AbsPos.X + AbsSize.X or
+               MousePos.Y < AbsPos.Y or MousePos.Y > AbsPos.Y + AbsSize.Y then
+                Close(false)
+            end
+        end
+    end)
+    
+    Container.Size = UDim2.new(0, 0, 0, 0)
+    TweenService:Create(Container, TweenInfo.new(0.3, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
+        Size = UDim2.new(0, 300, 0, 150)
+    }):Play()
+    
+    return Confirmation
+end
+
+function Library:CreateTooltip(Text, Position, Options)
+    local DefaultOptions = {
+        Duration = 3,
+        Color = Library.AccentColor,
+        Offset = Vector2.new(15, 15)
+    }
+    
+    Options = Library:Validate(Options or {}, DefaultOptions)
+    
+    local Tooltip = Library:Create('Frame', {
+        BackgroundColor3 = Library.MainColor;
+        BorderColor3 = Options.Color;
+        Position = Position or UDim2.fromOffset(Mouse.X + Options.Offset.X, Mouse.Y + Options.Offset.Y);
+        ZIndex = 400;
+        Parent = ScreenGui;
+    })
+    
+    local UICorner = Library:Create('UICorner', {
+        CornerRadius = UDim.new(0, 6);
+        Parent = Tooltip;
+    })
+    
+    local UIStroke = Library:Create('UIStroke', {
+        Color = Options.Color;
+        Thickness = 1;
+        Parent = Tooltip;
+    })
+    
+    local Label = Library:CreateLabel({
+        Position = UDim2.fromOffset(8, 4);
+        TextSize = 14;
+        Text = Text;
+        TextColor3 = Library.FontColor;
+        TextXAlignment = Enum.TextXAlignment.Left;
+        ZIndex = 401;
+        Parent = Tooltip;
+    })
+    
+    local X, Y = Library:GetTextBounds(Text, Library.Font, 14)
+    Tooltip.Size = UDim2.fromOffset(X + 16, Y + 8)
+    
+    if Options.Duration > 0 then
+        task.delay(Options.Duration, function()
+            TweenService:Create(Tooltip, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+                BackgroundTransparency = 1,
+                BorderColor3 = Color3.new(0, 0, 0)
+            }):Play()
+            
+            TweenService:Create(Label, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+                TextTransparency = 1
+            }):Play()
+            
+            task.delay(0.3, function()
+                Tooltip:Destroy()
+            end)
+        end)
+    end
+    
+    return {
+        Tooltip = Tooltip,
+        Destroy = function()
+            Tooltip:Destroy()
+        end,
+        UpdateText = function(NewText)
+            Label.Text = NewText
+            local X, Y = Library:GetTextBounds(NewText, Library.Font, 14)
+            Tooltip.Size = UDim2.fromOffset(X + 16, Y + 8)
+        end,
+        UpdatePosition = function(NewPosition)
+            Tooltip.Position = NewPosition
+        end
+    }
+end
+
+function Library:CreateProgressBar(Text, Total, Options)
+    local DefaultOptions = {
+        Color = Library.AccentColor,
+        Height = 20,
+        ShowPercentage = true,
+        ShowText = true,
+        Animated = true
+    }
+    
+    Options = Library:Validate(Options or {}, DefaultOptions)
+    
+    local ProgressBar = {
+        Value = 0,
+        Total = Total or 100,
+        Visible = true
+    }
+    
+    local Container = Library:Create('Frame', {
+        BackgroundColor3 = Color3.new(0, 0, 0);
+        BorderColor3 = Color3.new(0, 0, 0);
+        Size = UDim2.new(1, -4, 0, Options.Height);
+        ZIndex = 5;
+        Parent = Options.Parent or ScreenGui;
+    })
+    
+    local Inner = Library:Create('Frame', {
+        BackgroundColor3 = Library.SecondaryColor;
+        BorderColor3 = Library.OutlineColor;
+        BorderMode = Enum.BorderMode.Inset;
+        Size = UDim2.new(1, 0, 1, 0);
+        ZIndex = 6;
+        Parent = Container;
+    })
+    
+    local UICorner = Library:Create('UICorner', {
+        CornerRadius = UDim.new(0, 4);
+        Parent = Inner;
+    })
+    
+    local Fill = Library:Create('Frame', {
+        BackgroundColor3 = Options.Color;
+        BorderColor3 = Library:GetDarkerColor(Options.Color);
+        Size = UDim2.new(0, 0, 1, 0);
+        ZIndex = 7;
+        Parent = Inner;
+    })
+    
+    local FillUICorner = Library:Create('UICorner', {
+        CornerRadius = UDim.new(0, 4);
+        Parent = Fill;
+    })
+    
+    local Label
+    if Options.ShowText then
+        Label = Library:CreateLabel({
+            Size = UDim2.new(1, 0, 1, 0);
+            TextSize = 14;
+            Text = Text or "";
+            ZIndex = 8;
+            Parent = Inner;
+            RichText = true;
+        })
+    end
+    
+    function ProgressBar:SetValue(Value)
+        ProgressBar.Value = math.clamp(Value, 0, ProgressBar.Total)
+        local Percentage = ProgressBar.Value / ProgressBar.Total
+        
+        if Options.Animated then
+            TweenService:Create(Fill, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+                Size = UDim2.new(Percentage, 0, 1, 0)
+            }):Play()
+        else
+            Fill.Size = UDim2.new(Percentage, 0, 1, 0)
+        end
+        
+        if Label and Options.ShowPercentage then
+            Label.Text = string.format("%s (%d%%)", Text or "", math.floor(Percentage * 100))
+        end
+    end
+    
+    function ProgressBar:SetTotal(Total)
+        ProgressBar.Total = Total
+        ProgressBar:SetValue(ProgressBar.Value)
+    end
+    
+    function ProgressBar:SetVisible(Visible)
+        ProgressBar.Visible = Visible
+        Container.Visible = Visible
+    end
+    
+    function ProgressBar:Destroy()
+        Container:Destroy()
+    end
+    
+    ProgressBar:SetValue(0)
+    
+    return ProgressBar
+end
+
+function Library:CreateLoadingSpinner(Options)
+    local DefaultOptions = {
+        Size = 30,
+        Color = Library.AccentColor,
+        Speed = 1,
+        Thickness = 3
+    }
+    
+    Options = Library:Validate(Options or {}, DefaultOptions)
+    
+    local Spinner = {
+        Spinning = true,
+        Speed = Options.Speed
+    }
+    
+    local Container = Library:Create('Frame', {
+        BackgroundTransparency = 1;
+        Size = UDim2.new(0, Options.Size, 0, Options.Size);
+        ZIndex = 5;
+        Parent = Options.Parent or ScreenGui;
+    })
+    
+    local Circle = Library:Create('Frame', {
+        AnchorPoint = Vector2.new(0.5, 0.5);
+        BackgroundTransparency = 1;
+        Position = UDim2.new(0.5, 0, 0.5, 0);
+        Size = UDim2.new(1, 0, 1, 0);
+        ZIndex = 6;
+        Parent = Container;
+    })
+    
+    local UIStroke = Library:Create('UIStroke', {
+        Color = Options.Color;
+        Thickness = Options.Thickness;
+        Transparency = 0.5;
+        Parent = Circle;
+    })
+    
+    local UICorner = Library:Create('UICorner', {
+        CornerRadius = UDim.new(1, 0);
+        Parent = Circle;
+    })
+    
+    local ProgressCircle = Library:Create('Frame', {
+        AnchorPoint = Vector2.new(0.5, 0.5);
+        BackgroundTransparency = 1;
+        Position = UDim2.new(0.5, 0, 0.5, 0);
+        Size = UDim2.new(1, 0, 1, 0);
+        ZIndex = 7;
+        Parent = Container;
+    })
+    
+    local ProgressStroke = Library:Create('UIStroke', {
+        Color = Options.Color;
+        Thickness = Options.Thickness;
+        Parent = ProgressCircle;
+    })
+    
+    local ProgressCorner = Library:Create('UICorner', {
+        CornerRadius = UDim.new(1, 0);
+        Parent = ProgressCircle;
+    })
+    
+    local Rotation = 0
+    
+    local function Update()
+        if not Spinner.Spinning then return end
+        
+        Rotation = (Rotation + (2 * Spinner.Speed)) % 360
+        ProgressCircle.Rotation = Rotation
+        
+        RunService.RenderStepped:Wait()
+        Update()
+    end
+    
+    task.spawn(Update)
+    
+    function Spinner:Start()
+        Spinner.Spinning = true
+        Update()
+    end
+    
+    function Spinner:Stop()
+        Spinner.Spinning = false
+    end
+    
+    function Spinner:SetSpeed(Speed)
+        Spinner.Speed = Speed
+    end
+    
+    function Spinner:SetColor(Color)
+        ProgressStroke.Color = Color
+        UIStroke.Color = Color
+    end
+    
+    function Spinner:Destroy()
+        Spinner.Spinning = false
+        Container:Destroy()
+    end
+    
+    return Spinner
+end
+
+function Library:CreateContextMenu(Items, Options)
+    local DefaultOptions = {
+        Position = UDim2.fromOffset(Mouse.X, Mouse.Y),
+        Width = 150,
+        CloseOnClick = true
+    }
+    
+    Options = Library:Validate(Options or {}, DefaultOptions)
+    
+    local ContextMenu = {
+        Open = false
+    }
+    
+    local Container = Library:Create('Frame', {
+        BackgroundColor3 = Color3.new(0, 0, 0);
+        BorderColor3 = Color3.new(0, 0, 0);
+        Position = Options.Position;
+        Size = UDim2.new(0, Options.Width, 0, 0);
+        ZIndex = 500;
+        Visible = false;
+        Parent = ScreenGui;
+    })
+    
+    local UICorner = Library:Create('UICorner', {
+        CornerRadius = UDim.new(0, 6);
+        Parent = Container;
+    })
+    
+    local Inner = Library:Create('Frame', {
+        BackgroundColor3 = Library.MainColor;
+        BorderColor3 = Library.OutlineColor;
+        BorderMode = Enum.BorderMode.Inset;
+        Size = UDim2.new(1, 0, 1, 0);
+        ZIndex = 501;
+        Parent = Container;
+    })
+    
+    local UIStroke = Library:Create('UIStroke', {
+        Color = Library.AccentColor;
+        Thickness = 1;
+        Parent = Inner;
+    })
+    
+    local ListLayout = Library:Create('UIListLayout', {
+        FillDirection = Enum.FillDirection.Vertical;
+        SortOrder = Enum.SortOrder.LayoutOrder;
+        Parent = Inner;
+    })
+    
+    local Padding = Library:Create('UIPadding', {
+        PaddingTop = UDim.new(0, 4);
+        PaddingBottom = UDim.new(0, 4);
+        Parent = Inner;
+    })
+    
+    local ItemsByButton = {}
+    
+    for _, Item in next, Items do
+        if Item.Separator then
+            local Separator = Library:Create('Frame', {
+                BackgroundColor3 = Library.OutlineColor;
+                BorderSizePixel = 0;
+                Size = UDim2.new(1, -8, 0, 1);
+                ZIndex = 502;
+                Parent = Inner;
+            })
+            
+            Separator.Position = UDim2.new(0, 4, 0, 0)
+        else
+            local Button = Library:Create('TextButton', {
+                BackgroundTransparency = 1;
+                Size = UDim2.new(1, 0, 0, 25);
+                Text = "";
+                ZIndex = 502;
+                Parent = Inner;
+            })
+            
+            local Label = Library:CreateLabel({
+                Position = UDim2.new(0, 8, 0, 0);
+                Size = UDim2.new(1, -16, 1, 0);
+                Text = Item.Text or "";
+                TextSize = 14;
+                TextXAlignment = Enum.TextXAlignment.Left;
+                ZIndex = 503;
+                Parent = Button;
+            })
+            
+            if Item.Icon then
+                local Icon = Library:GetCustomIcon(Item.Icon)
+                if Icon then
+                    local IconLabel = Library:Create('ImageLabel', {
+                        BackgroundTransparency = 1;
+                        Position = UDim2.new(0, 4, 0, 4);
+                        Size = UDim2.new(0, 16, 0, 16);
+                        Image = Icon.Url;
+                        ImageRectOffset = Icon.ImageRectOffset;
+                        ImageRectSize = Icon.ImageRectSize;
+                        ImageColor3 = Library.AccentColor;
+                        ZIndex = 503;
+                        Parent = Button;
+                    })
+                    
+                    Label.Position = UDim2.new(0, 24, 0, 0)
+                    Label.Size = UDim2.new(1, -28, 1, 0)
+                end
+            end
+            
+            if Item.Shortcut then
+                local ShortcutLabel = Library:CreateLabel({
+                    AnchorPoint = Vector2.new(1, 0);
+                    Position = UDim2.new(1, -4, 0, 0);
+                    Size = UDim2.new(0, 50, 1, 0);
+                    Text = Item.Shortcut;
+                    TextSize = 12;
+                    TextColor3 = Library.DisabledTextColor;
+                    TextXAlignment = Enum.TextXAlignment.Right;
+                    ZIndex = 503;
+                    Parent = Button;
+                })
+            end
+            
+            Library:OnHighlight(Button, Label,
+                { TextColor3 = 'AccentColor' },
+                { TextColor3 = 'FontColor' }
+            )
+            
+            if Item.Disabled then
+                Label.TextColor3 = Library.DisabledTextColor
+            else
+                Button.MouseButton1Click:Connect(function()
+                    if Item.Callback then
+                        Item.Callback()
+                    end
+                    
+                    if Options.CloseOnClick then
+                        ContextMenu:Close()
+                    end
+                end)
+            end
+            
+            ItemsByButton[Button] = Item
+        end
+    end
+    
+    ListLayout:GetPropertyChangedSignal('AbsoluteContentSize'):Connect(function()
+        Container.Size = UDim2.new(0, Options.Width, 0, ListLayout.AbsoluteContentSize.Y + 8)
+    end)
+    
+    function ContextMenu:Open(Position)
+        if ContextMenu.Open then return end
+        
+        ContextMenu.Open = true
+        Container.Visible = true
+        Container.Position = Position or Options.Position
+        
+        for Button, Item in next, ItemsByButton do
+            if Item.Disabled then
+                Button.TextButton.TextColor3 = Library.DisabledTextColor
+            end
+        end
+    end
+    
+    function ContextMenu:Close()
+        if not ContextMenu.Open then return end
+        
+        ContextMenu.Open = false
+        Container.Visible = false
+    end
+    
+    function ContextMenu:Toggle(Position)
+        if ContextMenu.Open then
+            ContextMenu:Close()
+        else
+            ContextMenu:Open(Position)
+        end
+    end
+    
+    function ContextMenu:Destroy()
+        Container:Destroy()
+    end
+    
+    Library:GiveSignal(InputService.InputBegan:Connect(function(Input)
+        if ContextMenu.Open and Input.UserInputType == Enum.UserInputType.MouseButton1 then
+            local AbsPos, AbsSize = Container.AbsolutePosition, Container.AbsoluteSize
+            local MousePos = Input.Position
+            
+            if MousePos.X < AbsPos.X or MousePos.X > AbsPos.X + AbsSize.X or
+               MousePos.Y < AbsPos.Y or MousePos.Y > AbsPos.Y + AbsSize.Y then
+                ContextMenu:Close()
+            end
+        end
+    end))
+    
+    return ContextMenu
+end
+
+function Library:CreateHotkey(Key, Callback, Options)
+    local DefaultOptions = {
+        Enabled = true,
+        Description = "",
+        Hold = false
+    }
+    
+    Options = Library:Validate(Options or {}, DefaultOptions)
+    
+    local Hotkey = {
+        Key = Key,
+        Callback = Callback,
+        Enabled = Options.Enabled,
+        Description = Options.Description,
+        Hold = Options.Hold,
+        Pressed = false
+    }
+    
+    local function OnInput(Input, GameProcessed)
+        if GameProcessed or not Hotkey.Enabled then return end
+        
+        if Input.UserInputType == Enum.UserInputType.Keyboard and Input.KeyCode == Hotkey.Key then
+            if Hotkey.Hold then
+                if Input.UserInputState == Enum.UserInputState.Begin then
+                    Hotkey.Pressed = true
+                    Library:SafeCallback(Hotkey.Callback, true)
+                elseif Input.UserInputState == Enum.UserInputState.End then
+                    Hotkey.Pressed = false
+                    Library:SafeCallback(Hotkey.Callback, false)
+                end
+            else
+                if Input.UserInputState == Enum.UserInputState.Begin then
+                    Library:SafeCallback(Hotkey.Callback)
+                end
+            end
+        end
+    end
+    
+    Library:GiveSignal(InputService.InputBegan:Connect(function(Input, GameProcessed)
+        OnInput(Input, GameProcessed)
+    end))
+    
+    Library:GiveSignal(InputService.InputEnded:Connect(function(Input, GameProcessed)
+        OnInput(Input, GameProcessed)
+    end))
+    
+    function Hotkey:Enable()
+        Hotkey.Enabled = true
+    end
+    
+    function Hotkey:Disable()
+        Hotkey.Enabled = false
+    end
+    
+    function Hotkey:SetKey(NewKey)
+        Hotkey.Key = NewKey
+    end
+    
+    function Hotkey:SetCallback(NewCallback)
+        Hotkey.Callback = NewCallback
+    end
+    
+    return Hotkey
+end
+
+function Library:CreateValueDisplay(Values, Options)
+    local DefaultOptions = {
+        Position = UDim2.new(0, 10, 0, 10),
+        Size = UDim2.new(0, 200, 0, 0),
+        Title = "数值显示",
+        UpdateInterval = 0.1,
+        AutoSize = true
+    }
+    
+    Options = Library:Validate(Options or {}, DefaultOptions)
+    
+    local Display = {
+        Values = Values or {},
+        Visible = true,
+        Updating = true
+    }
+    
+    local Container = Library:Create('Frame', {
+        BackgroundColor3 = Color3.new(0, 0, 0);
+        BorderColor3 = Color3.new(0, 0, 0);
+        Position = Options.Position;
+        Size = Options.Size;
+        ZIndex = 100;
+        Parent = ScreenGui;
+    })
+    
+    local UICorner = Library:Create('UICorner', {
+        CornerRadius = UDim.new(0, 6);
+        Parent = Container;
+    })
+    
+    local Inner = Library:Create('Frame', {
+        BackgroundColor3 = Library.MainColor;
+        BorderColor3 = Library.OutlineColor;
+        BorderMode = Enum.BorderMode.Inset;
+        Size = UDim2.new(1, 0, 1, 0);
+        ZIndex = 101;
+        Parent = Container;
+    })
+    
+    local UIStroke = Library:Create('UIStroke', {
+        Color = Library.AccentColor;
+        Thickness = 1;
+        Parent = Inner;
+    })
+    
+    local TitleLabel = Library:CreateLabel({
+        Position = UDim2.new(0, 5, 0, 2);
+        Size = UDim2.new(1, -10, 0, 20);
+        Text = Options.Title;
+        TextSize = 14;
+        TextXAlignment = Enum.TextXAlignment.Left;
+        ZIndex = 102;
+        Parent = Inner;
+    })
+    
+    local ValueContainer = Library:Create('Frame', {
+        BackgroundTransparency = 1;
+        Position = UDim2.new(0, 0, 0, 24);
+        Size = UDim2.new(1, 0, 1, -24);
+        ZIndex = 102;
+        Parent = Inner;
+    })
+    
+    local ListLayout = Library:Create('UIListLayout', {
+        FillDirection = Enum.FillDirection.Vertical;
+        SortOrder = Enum.SortOrder.LayoutOrder;
+        Parent = ValueContainer;
+    })
+    
+    local Padding = Library:Create('UIPadding', {
+        PaddingLeft = UDim.new(0, 5);
+        PaddingRight = UDim.new(0, 5);
+        Parent = ValueContainer;
+    })
+    
+    local ValueLabels = {}
+    
+    local function UpdateValues()
+        for Name, Value in next, Display.Values do
+            if not ValueLabels[Name] then
+                local Label = Library:CreateLabel({
+                    Size = UDim2.new(1, 0, 0, 18);
+                    Text = string.format("%s: %s", Name, tostring(Value));
+                    TextSize = 12;
+                    TextXAlignment = Enum.TextXAlignment.Left;
+                    ZIndex = 103;
+                    Parent = ValueContainer;
+                })
+                
+                ValueLabels[Name] = Label
+            else
+                ValueLabels[Name].Text = string.format("%s: %s", Name, tostring(Value))
+            end
+        end
+        
+        if Options.AutoSize then
+            Container.Size = UDim2.new(0, Options.Size.X.Offset, 0, 24 + (#Display.Values * 18) + 4)
+        end
+    end
+    
+    task.spawn(function()
+        while Display.Updating and not Library.Unloaded do
+            UpdateValues()
+            task.wait(Options.UpdateInterval)
+        end
+    end)
+    
+    function Display:SetValue(Name, Value)
+        Display.Values[Name] = Value
+    end
+    
+    function Display:RemoveValue(Name)
+        Display.Values[Name] = nil
+        if ValueLabels[Name] then
+            ValueLabels[Name]:Destroy()
+            ValueLabels[Name] = nil
+        end
+    end
+    
+    function Display:SetVisible(Visible)
+        Display.Visible = Visible
+        Container.Visible = Visible
+    end
+    
+    function Display:StopUpdating()
+        Display.Updating = false
+    end
+    
+    function Display:Destroy()
+        Display.Updating = false
+        Container:Destroy()
+    end
+    
+    Library:MakeDraggable(Container)
+    
+    return Display
+end
+
+Library:GiveSignal(ScreenGui.DescendantAdded:Connect(function(Instance)
+    if Library.Unloaded then return end
+    
+    if Instance:IsA("Frame") or Instance:IsA("ScrollingFrame") then
+        if not Instance:FindFirstChild("UICorner") and not Instance.Name:match("Cursor") then
+            local UICorner = Instance:FindFirstChildOfClass("UICorner")
+            if not UICorner then
+                Library:Create('UICorner', {
+                    CornerRadius = UDim.new(0, 4);
+                    Parent = Instance;
+                })
+            end
+        end
+    end
+end))
+
+Library:GiveSignal(RunService.RenderStepped:Connect(function()
+    if Library.Unloaded then return end
+    
+    if Library.CurrentRainbowColor and Library.GlowEnabled then
+        for _, Instance in next, Library.Registry do
+            if Instance.Instance:IsA("UIStroke") and Instance.Properties.Color == 'AccentColor' then
+                Instance.Instance.Color = Library.CurrentRainbowColor
+            elseif Instance.Instance:IsA("Frame") and Instance.Properties.BackgroundColor3 == 'AccentColor' then
+                Instance.Instance.BackgroundColor3 = Library.CurrentRainbowColor
+            elseif Instance.Instance:IsA("ImageLabel") and Instance.Properties.ImageColor3 == 'AccentColor' then
+                Instance.Instance.ImageColor3 = Library.CurrentRainbowColor
+            end
+        end
+    end
+end))
+
+Library:CreateWindow = function(...)
+    local Window = Library.CreateWindow(...)
+    
+    Window:AddTab("设置"):AddLeftGroupbox("界面设置"):AddToggle("UIBlur", {
+        Text = "背景模糊",
+        Default = Library.BlurEnabled,
+        Callback = function(Value)
+            Library.BlurEnabled = Value
+        end
+    }):AddToggle("UIGlow", {
+        Text = "发光效果",
+        Default = Library.GlowEnabled,
+        Callback = function(Value)
+            Library.GlowEnabled = Value
+            if Window.Holder and Window.Holder:FindFirstChild("OuterGlow") then
+                Window.Holder.OuterGlow.Visible = Value
+            end
+        end
+    }):AddToggle("UIAnimations", {
+        Text = "动画效果",
+        Default = Library.AnimationsEnabled,
+        Callback = function(Value)
+            Library.AnimationsEnabled = Value
+        end
+    }):AddSlider("UIDPIScale", {
+        Text = "界面缩放",
+        Default = 100,
+        Min = 50,
+        Max = 150,
+        Rounding = 0,
+        Suffix = "%",
+        Callback = function(Value)
+            Library:SetDPIScale(Value)
+        end
+    })
+    
+    return Window
+end
+
+Library:Notify("Linoria 库已加载完成!", 3)
+
 getgenv().Linoria = Library
 if getgenv().skip_getgenv_linoria ~= true then getgenv().Library = Library end
 return Library
