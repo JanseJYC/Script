@@ -7425,8 +7425,6 @@ Library:GiveSignal(RunService.RenderStepped:Connect(function()
     end
 end))
 
-Library:Notify("Linoria 库已加载完成!", 3)
-
 getgenv().Linoria = Library
 if getgenv().skip_getgenv_linoria ~= true then 
     getgenv().Library = Library 
