@@ -7425,59 +7425,6 @@ Library:GiveSignal(RunService.RenderStepped:Connect(function()
     end
 end))
 
-local function CreateWindowWithSettings(...)
-    local Window = Library.CreateWindow(...)
-    
-    local SettingsTab = Window:AddTab("设置")
-    local InterfaceGroup = SettingsTab:AddLeftGroupbox("界面设置")
-    
-    InterfaceGroup:AddToggle("UIBlur", {
-        Text = "背景模糊",
-        Default = Library.BlurEnabled,
-        Callback = function(Value)
-            Library.BlurEnabled = Value
-            if not Value and Lighting:FindFirstChild("LinoriaBlur") then
-                Lighting.LinoriaBlur:Destroy()
-            end
-        end
-    })
-    
-    InterfaceGroup:AddToggle("UIGlow", {
-        Text = "发光效果",
-        Default = Library.GlowEnabled,
-        Callback = function(Value)
-            Library.GlowEnabled = Value
-            if Window.Holder and Window.Holder:FindFirstChild("OuterGlow") then
-                Window.Holder.OuterGlow.Visible = Value
-            end
-        end
-    })
-    
-    InterfaceGroup:AddToggle("UIAnimations", {
-        Text = "动画效果",
-        Default = Library.AnimationsEnabled,
-        Callback = function(Value)
-            Library.AnimationsEnabled = Value
-        end
-    })
-    
-    InterfaceGroup:AddSlider("UIDPIScale", {
-        Text = "界面缩放",
-        Default = 100,
-        Min = 50,
-        Max = 150,
-        Rounding = 0,
-        Suffix = "%",
-        Callback = function(Value)
-            Library:SetDPIScale(Value)
-        end
-    })
-    
-    return Window
-end
-
-Library.CreateWindow = CreateWindowWithSettings
-
 Library:Notify("Linoria 库已加载完成!", 3)
 
 getgenv().Linoria = Library
