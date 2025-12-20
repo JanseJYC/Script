@@ -218,12 +218,12 @@ local Library = {
     RegistryMap = {};
     HudRegistry = {};
 
-    FontColor = Color3.fromRGB(255, 255, 255);
+    FontColor = Color3.fromRGB(240, 240, 240);
     MainColor = Color3.fromRGB(28, 28, 28);
     BackgroundColor = Color3.fromRGB(20, 20, 20);
     SecondaryColor = Color3.fromRGB(38, 38, 38);
 
-    AccentColor = Color3.fromRGB(0, 170, 255);
+    AccentColor = Color3.fromRGB(0, 122, 255);
     DisabledAccentColor = Color3.fromRGB(142, 142, 142);
 
     OutlineColor = Color3.fromRGB(60, 60, 60);
@@ -231,7 +231,7 @@ local Library = {
 
     DisabledTextColor = Color3.fromRGB(142, 142, 142);
 
-    RiskColor = Color3.fromRGB(255, 50, 50);
+    RiskColor = Color3.fromRGB(255, 59, 48);
 
     Black = Color3.new(0, 0, 0);
     Font = Enum.Font.SourceSansSemibold or Enum.Font.GothamSemibold or Enum.Font.SourceSans;
@@ -265,7 +265,7 @@ local Library = {
     Unloaded = false;
 
     Notify = nil;
-    NotifySide = "Left";
+    NotifySide = "Right";
     ShowCustomCursor = true;
     ShowToggleFrameInKeybinds = true;
     NotifyOnError = false;
@@ -4976,18 +4976,35 @@ function Library:CreateWindow(...)
     LibraryMainOuterFrame = Outer
     
     local OuterUICorner = Library:Create('UICorner', {
-        CornerRadius = UDim.new(0, 8);
+        CornerRadius = UDim.new(0, 12);
         Parent = Outer;
+    })
+    
+    local AcrylicFrame = Library:Create('Frame', {
+        BackgroundTransparency = 0.85;
+        BackgroundColor3 = Color3.fromRGB(28, 28, 28);
+        Size = UDim2.new(1, 0, 1, 0);
+        ZIndex = 0;
+        Parent = Outer;
+    })
+    
+    local NoiseTexture = Library:Create('ImageLabel', {
+        Image = "rbxassetid://9968331586";
+        ImageTransparency = 0.85;
+        BackgroundTransparency = 1;
+        Size = UDim2.new(1, 0, 1, 0);
+        ZIndex = 1;
+        Parent = AcrylicFrame;
     })
     
     local OuterGlow = Library:Create('ImageLabel', {
         AnchorPoint = Vector2.new(0.5, 0.5);
         BackgroundTransparency = 1;
         Position = UDim2.new(0.5, 0, 0.5, 0);
-        Size = UDim2.new(1, 20, 1, 20);
+        Size = UDim2.new(1, 24, 1, 24);
         Image = "rbxassetid://8992230673";
         ImageColor3 = Library.AccentColor;
-        ImageTransparency = 0.8;
+        ImageTransparency = 0.6;
         ScaleType = Enum.ScaleType.Slice;
         SliceCenter = Rect.new(20, 20, 280, 280);
         ZIndex = 0;
@@ -5010,18 +5027,19 @@ local Inner = Library:Create('Frame', {
     BorderMode = Enum.BorderMode.Inset;
     Position = UDim2.new(0, 1, 0, 1);
     Size = UDim2.new(1, -2, 1, -2);
-    ZIndex = 1;
+    ZIndex = 2;
     Parent = Outer;
 })
 
     local InnerUICorner = Library:Create('UICorner', {
-        CornerRadius = UDim.new(0, 8);
+        CornerRadius = UDim.new(0, 10);
         Parent = Inner;
     })
 
     local InnerUIStroke = Library:Create('UIStroke', {
         Color = Library.AccentColor;
         Thickness = 1;
+        Transparency = 0.5;
         Parent = Inner;
     })
 
@@ -5039,7 +5057,7 @@ local Inner = Library:Create('Frame', {
         Size = UDim2.new(0, 0, 0, 25);
         Text = WindowInfo.Title or '';
         TextXAlignment = Enum.TextXAlignment.Left;
-        ZIndex = 1;
+        ZIndex = 3;
         Parent = Inner;
     })
 
@@ -5048,12 +5066,12 @@ local Inner = Library:Create('Frame', {
         BorderColor3 = Library.OutlineColor;
         Position = UDim2.new(0, 8, 0, 25);
         Size = UDim2.new(1, -16, 1, -33);
-        ZIndex = 1;
+        ZIndex = 3;
         Parent = Inner;
     })
 
     local MainSectionUICorner = Library:Create('UICorner', {
-        CornerRadius = UDim.new(0, 6);
+        CornerRadius = UDim.new(0, 8);
         Parent = MainSectionOuter;
     })
 
@@ -5068,7 +5086,7 @@ local Inner = Library:Create('Frame', {
         BorderMode = Enum.BorderMode.Inset;
         Position = UDim2.new(0, 0, 0, 0);
         Size = UDim2.new(1, 0, 1, 0);
-        ZIndex = 1;
+        ZIndex = 3;
         Parent = MainSectionOuter;
     })
 
@@ -5085,7 +5103,7 @@ local Inner = Library:Create('Frame', {
         BackgroundTransparency = 1;
         Position = UDim2.new(0, 8 - WindowInfo.TabPadding, 0, 4);
         Size = UDim2.new(1, -10, 0, 26);
-        ZIndex = 1;
+        ZIndex = 3;
         Parent = MainSectionInner;
     })
 
@@ -5121,12 +5139,12 @@ local Inner = Library:Create('Frame', {
         BorderColor3 = Library.OutlineColor;
         Position = UDim2.new(0, 8, 0, 30);
         Size = UDim2.new(1, -16, 1, -38);
-        ZIndex = 2;
+        ZIndex = 4;
         Parent = MainSectionInner;
     })
     
     local TabContainerUICorner = Library:Create('UICorner', {
-        CornerRadius = UDim.new(0, 6);
+        CornerRadius = UDim.new(0, 8);
         Parent = TabContainer;
     })
 
@@ -5136,7 +5154,7 @@ local Inner = Library:Create('Frame', {
         BorderSizePixel = 0;
         Position = UDim2.new(0, 1, 0, 1);
         Size = UDim2.new(1, -2, 1, -2);
-        ZIndex = 2;
+        ZIndex = 4;
         Visible = false;
         Volume = 0;
         Looped = true;
@@ -5179,13 +5197,13 @@ local Inner = Library:Create('Frame', {
         local TabButton = Library:Create('Frame', {
             BackgroundColor3 = Library.BackgroundColor;
             BorderColor3 = Library.OutlineColor;
-            Size = UDim2.new(0, TabButtonWidth + 8 + 4, 0.85, 0);
-            ZIndex = 1;
+            Size = UDim2.new(0, TabButtonWidth + 12, 0.85, 0);
+            ZIndex = 3;
             Parent = TabArea;
         })
 
         local TabButtonUICorner = Library:Create('UICorner', {
-            CornerRadius = UDim.new(0, 4);
+            CornerRadius = UDim.new(0, 6);
             Parent = TabButton;
         })
 
@@ -5198,7 +5216,7 @@ local Inner = Library:Create('Frame', {
             Position = UDim2.new(0, 0, 0, 0);
             Size = UDim2.new(1, 0, 1, -1);
             Text = Tab.Name;
-            ZIndex = 1;
+            ZIndex = 3;
             Parent = TabButton;
         })
 
@@ -5208,7 +5226,7 @@ local Inner = Library:Create('Frame', {
             Position = UDim2.new(0, 0, 1, 0);
             Size = UDim2.new(1, 0, 0, 1);
             BackgroundTransparency = 1;
-            ZIndex = 3;
+            ZIndex = 5;
             Parent = TabButton;
         })
 
@@ -5222,7 +5240,7 @@ local Inner = Library:Create('Frame', {
             Position = UDim2.new(0, 0, 0, 0);
             Size = UDim2.new(1, 0, 1, 0);
             Visible = false;
-            ZIndex = 2;
+            ZIndex = 4;
             Parent = TabContainer;
         })
         
@@ -5236,13 +5254,13 @@ do
                 BorderMode = Enum.BorderMode.Inset;
                 Position = UDim2.new(0, 7, 0, 7);
                 Size = UDim2.new(1, -13, 0, 0);
-                ZIndex = 2;
+                ZIndex = 4;
                 Parent = TabFrame;
                 Visible = false;
             })
 
             local TopBarUICorner = Library:Create('UICorner', {
-                CornerRadius = UDim.new(0, 4);
+                CornerRadius = UDim.new(0, 6);
                 Parent = TopBar;
             })
 
@@ -5251,7 +5269,7 @@ do
                 BorderColor3 = Color3.new();
                 Size = UDim2.new(1, -2, 1, -2);
                 Position = UDim2.new(0, 1, 0, 1);
-                ZIndex = 4;
+                ZIndex = 6;
                 Parent = TopBar;
             })
 
@@ -5259,7 +5277,7 @@ do
                 BackgroundColor3 = Color3.fromRGB(255, 75, 75);
                 BorderSizePixel = 0;
                 Size = UDim2.new(1, 0, 0, 2);
-                ZIndex = 5;
+                ZIndex = 7;
                 Parent = TopBarInner;
             })
 
@@ -5270,7 +5288,7 @@ do
                 CanvasSize = UDim2.new(0, 0, 0, 0);
                 AutomaticCanvasSize = Enum.AutomaticSize.Y;
                 ScrollBarThickness = 3;
-                ZIndex = 5;
+                ZIndex = 7;
                 Parent = TopBarInner;
             })
 
@@ -5285,7 +5303,7 @@ do
                 Text = "文本";
                 TextXAlignment = Enum.TextXAlignment.Left;
                 TextColor3 = Color3.fromRGB(255, 55, 55);
-                ZIndex = 5;
+                ZIndex = 7;
                 Parent = TopBarScrollingFrame;
             })
 
@@ -5301,7 +5319,7 @@ do
                 TextWrapped = true,
                 TextXAlignment = Enum.TextXAlignment.Left;
                 TextYAlignment = Enum.TextYAlignment.Top;
-                ZIndex = 5;
+                ZIndex = 7;
                 Parent = TopBarScrollingFrame;
             })
             
@@ -5323,7 +5341,7 @@ do
             BottomImage = '';
             TopImage = '';
             ScrollBarThickness = 0;
-            ZIndex = 2;
+            ZIndex = 4;
             Parent = TabFrame;
         })
 
@@ -5336,7 +5354,7 @@ do
             BottomImage = '';
             TopImage = '';
             ScrollBarThickness = 0;
-            ZIndex = 2;
+            ZIndex = 4;
             Parent = TabFrame;
         })
 
@@ -5512,7 +5530,7 @@ do
 
                 local TabButtonWidth = Library:GetTextBounds(Tab.Name, Library.Font, 16)
 
-                TabButton.Size = UDim2.new(0, TabButtonWidth + 8 + 4, 0.85, 0)
+                TabButton.Size = UDim2.new(0, TabButtonWidth + 12, 0.85, 0)
                 TabButtonLabel.Text = Tab.Name
             end
         end
@@ -5525,17 +5543,23 @@ do
                 TableType = "Groupbox";
             }
 
+            local sideFrame = Info.Side == 1 and Tab.LeftSideFrame or Tab.RightSideFrame
+            if not sideFrame then
+                warn("Side frame not found for groupbox")
+                return nil
+            end
+
             local BoxOuter = Library:Create('Frame', {
                 BackgroundColor3 = Library.BackgroundColor;
                 BorderColor3 = Library.OutlineColor;
                 BorderMode = Enum.BorderMode.Inset;
-                Size = UDim2.new(1, 0, 0, 507 + 2);
-                ZIndex = 2;
-                Parent = Info.Side == 1 and LeftSide or RightSide;
+                Size = UDim2.new(1, 0, 0, 50);
+                ZIndex = 4;
+                Parent = sideFrame;
             })
 
             local BoxUICorner = Library:Create('UICorner', {
-                CornerRadius = UDim.new(0, 6);
+                CornerRadius = UDim.new(0, 8);
                 Parent = BoxOuter;
             })
 
@@ -5549,7 +5573,7 @@ do
                 BorderColor3 = Color3.new(0, 0, 0);
                 Size = UDim2.new(1, -2, 1, -2);
                 Position = UDim2.new(0, 1, 0, 1);
-                ZIndex = 4;
+                ZIndex = 6;
                 Parent = BoxOuter;
             })
 
@@ -5561,7 +5585,7 @@ do
                 BackgroundColor3 = Library.AccentColor;
                 BorderSizePixel = 0;
                 Size = UDim2.new(1, 0, 0, 2);
-                ZIndex = 5;
+                ZIndex = 7;
                 Parent = BoxInner;
             })
 
@@ -5575,7 +5599,7 @@ do
                 TextSize = 14;
                 Text = Info.Name;
                 TextXAlignment = Enum.TextXAlignment.Left;
-                ZIndex = 5;
+                ZIndex = 7;
                 Parent = BoxInner;
             })
 
@@ -5583,7 +5607,7 @@ do
                 BackgroundTransparency = 1;
                 Position = UDim2.new(0, 4, 0, 20);
                 Size = UDim2.new(1, -4, 1, -20);
-                ZIndex = 1;
+                ZIndex = 3;
                 Parent = BoxInner;
             })
 
@@ -5629,17 +5653,23 @@ do
                 Tabs = {};
             }
 
+            local sideFrame = Info.Side == 1 and Tab.LeftSideFrame or Tab.RightSideFrame
+            if not sideFrame then
+                warn("Side frame not found for tabbox")
+                return nil
+            end
+
             local BoxOuter = Library:Create('Frame', {
                 BackgroundColor3 = Library.BackgroundColor;
                 BorderColor3 = Library.OutlineColor;
                 BorderMode = Enum.BorderMode.Inset;
                 Size = UDim2.new(1, 0, 0, 0);
-                ZIndex = 2;
-                Parent = Info.Side == 1 and LeftSide or RightSide;
+                ZIndex = 4;
+                Parent = sideFrame;
             })
 
             local BoxUICorner = Library:Create('UICorner', {
-                CornerRadius = UDim.new(0, 6);
+                CornerRadius = UDim.new(0, 8);
                 Parent = BoxOuter;
             })
 
@@ -5653,7 +5683,7 @@ do
                 BorderColor3 = Color3.new(0, 0, 0);
                 Size = UDim2.new(1, -2, 1, -2);
                 Position = UDim2.new(0, 1, 0, 1);
-                ZIndex = 4;
+                ZIndex = 6;
                 Parent = BoxOuter;
             })
 
@@ -5665,7 +5695,7 @@ do
                 BackgroundColor3 = Library.AccentColor;
                 BorderSizePixel = 0;
                 Size = UDim2.new(1, 0, 0, 2);
-                ZIndex = 10;
+                ZIndex = 12;
                 Parent = BoxInner;
             })
 
@@ -5677,7 +5707,7 @@ do
                 BackgroundTransparency = 1;
                 Position = UDim2.new(0, 0, 0, 1);
                 Size = UDim2.new(1, 0, 0, 18);
-                ZIndex = 5;
+                ZIndex = 7;
                 Parent = BoxInner;
             })
 
@@ -5699,12 +5729,12 @@ do
                     BackgroundColor3 = Library.MainColor;
                     BorderColor3 = Color3.new(0, 0, 0);
                     Size = UDim2.new(0.5, 0, 1, 0);
-                    ZIndex = 6;
+                    ZIndex = 8;
                     Parent = TabboxButtons;
                 })
 
                 local ButtonUICorner = Library:Create('UICorner', {
-                    CornerRadius = UDim.new(0, 4);
+                    CornerRadius = UDim.new(0, 6);
                     Parent = Button;
                 })
 
@@ -5717,7 +5747,7 @@ do
                     TextSize = 14;
                     Text = Name;
                     TextXAlignment = Enum.TextXAlignment.Center;
-                    ZIndex = 7;
+                    ZIndex = 9;
                     Parent = Button;
                     RichText = true;
                 })
@@ -5728,7 +5758,7 @@ do
                     Position = UDim2.new(0, 0, 1, 0);
                     Size = UDim2.new(1, 0, 0, 1);
                     Visible = false;
-                    ZIndex = 9;
+                    ZIndex = 11;
                     Parent = Button;
                 })
 
@@ -5740,7 +5770,7 @@ do
                     BackgroundTransparency = 1;
                     Position = UDim2.new(0, 4, 0, 20);
                     Size = UDim2.new(1, -4, 1, -20);
-                    ZIndex = 1;
+                    ZIndex = 3;
                     Visible = false;
                     Parent = BoxInner;
                 })
@@ -6002,18 +6032,100 @@ do
         end
     end))
 
+    local DynamicIsland = {}
+    do
+        DynamicIsland.Outer = Library:Create('Frame', {
+            AnchorPoint = Vector2.new(0.5, 0);
+            BackgroundColor3 = Color3.new(0, 0, 0);
+            Position = UDim2.new(0.5, 0, 0, 5);
+            Size = UDim2.new(0, 120, 0, 30);
+            ZIndex = 400;
+            Parent = ScreenGui;
+        })
+
+        local UICorner3 = Library:Create('UICorner', {
+            CornerRadius = UDim.new(1, 0);
+            Parent = DynamicIsland.Outer;
+        })
+
+        DynamicIsland.Inner = Library:Create('Frame', {
+            BackgroundColor3 = Library.MainColor;
+            BorderColor3 = Library.AccentColor;
+            BorderMode = Enum.BorderMode.Inset;
+            Size = UDim2.new(1, 0, 1, 0);
+            ZIndex = 401;
+            Parent = DynamicIsland.Outer;
+        })
+
+        local UICorner4 = Library:Create('UICorner', {
+            CornerRadius = UDim.new(1, 0);
+            Parent = DynamicIsland.Inner;
+        })
+
+        Library:AddToRegistry(DynamicIsland.Inner, {
+            BorderColor3 = 'AccentColor';
+        })
+
+        DynamicIsland.Label = Library:CreateLabel({
+            Size = UDim2.new(1, 0, 1, 0);
+            TextSize = 14;
+            Text = "Janse UI";
+            ZIndex = 402;
+            Parent = DynamicIsland.Inner;
+        })
+
+        function DynamicIsland:Show()
+            DynamicIsland.Outer.Visible = true
+            TweenService:Create(DynamicIsland.Outer, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+                Position = UDim2.new(0.5, 0, 0, 5)
+            }):Play()
+        end
+
+        function DynamicIsland:Hide()
+            TweenService:Create(DynamicIsland.Outer, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+                Position = UDim2.new(0.5, 0, 0, -40)
+            }):Play()
+            task.delay(0.3, function()
+                DynamicIsland.Outer.Visible = false
+            end)
+        end
+
+        function DynamicIsland:SetText(Text)
+            DynamicIsland.Label.Text = Text
+            local X = Library:GetTextBounds(Text, Library.Font, 14)
+            DynamicIsland.Outer.Size = UDim2.new(0, math.max(120, X + 40), 0, 30)
+        end
+
+        function DynamicIsland:Pulse()
+            local OriginalSize = DynamicIsland.Outer.Size
+            TweenService:Create(DynamicIsland.Outer, TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+                Size = UDim2.new(0, OriginalSize.X.Offset * 1.1, 0, OriginalSize.Y.Offset * 1.1)
+            }):Play()
+            task.wait(0.2)
+            TweenService:Create(DynamicIsland.Outer, TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+                Size = OriginalSize
+            }):Play()
+        end
+
+        DynamicIsland:Show()
+        task.delay(2, function()
+            DynamicIsland:Hide()
+        end)
+    end
+    Library.DynamicIsland = DynamicIsland
+
     if Library.IsMobile then
         local ControlPanelOuter = Library:Create('Frame', {
             BorderColor3 = Color3.new(0, 0, 0);
             Position = UDim2.new(0.008, 0, 0.018, 0);
             Size = UDim2.new(0, 85, 0, 65);
-            ZIndex = 200;
+            ZIndex = 400;
             Visible = true;
             Parent = ScreenGui;
         })
         
         local ControlPanelUICorner = Library:Create('UICorner', {
-            CornerRadius = UDim.new(0, 6);
+            CornerRadius = UDim.new(0, 12);
             Parent = ControlPanelOuter;
         })
         
@@ -6022,7 +6134,7 @@ do
             BorderColor3 = Library.AccentColor;
             BorderMode = Enum.BorderMode.Inset;
             Size = UDim2.new(1, 0, 1, 0);
-            ZIndex = 201;
+            ZIndex = 401;
             Parent = ControlPanelOuter;
         })
         
@@ -6035,7 +6147,7 @@ do
             BorderSizePixel = 0;
             Position = UDim2.new(0, 1, 0, 1);
             Size = UDim2.new(1, -2, 1, -2);
-            ZIndex = 202;
+            ZIndex = 402;
             Parent = ControlPanelInner;
         })
         
@@ -6067,7 +6179,7 @@ do
             TextSize = 14;
             TextXAlignment = Enum.TextXAlignment.Left;
             TextStrokeTransparency = 0;
-            ZIndex = 203;
+            ZIndex = 403;
             Parent = ControlPanelInnerFrame;
         })
         
@@ -6081,7 +6193,7 @@ do
             TextSize = 14;
             TextXAlignment = Enum.TextXAlignment.Left;
             TextStrokeTransparency = 0;
-            ZIndex = 203;
+            ZIndex = 403;
             Parent = ControlPanelInnerFrame;
         })
 
@@ -6089,6 +6201,12 @@ do
 
         ToggleUIButton.MouseButton1Down:Connect(function()
             Library:Toggle()
+            Library.DynamicIsland:SetText(if Library.Toggled then "UI 已打开" else "UI 已关闭")
+            Library.DynamicIsland:Show()
+            Library.DynamicIsland:Pulse()
+            task.delay(2, function()
+                Library.DynamicIsland:Hide()
+            end)
         end)
         
         LockUIButton.MouseButton1Down:Connect(function()
@@ -6096,10 +6214,17 @@ do
             LockUIButton.Text = Library.CantDragForced and "解锁界面" or "锁定界面"
             
             if Library.CantDragForced then
+                Library.DynamicIsland:SetText("界面已锁定")
                 Library:Notify("界面已锁定", 2)
             else
+                Library.DynamicIsland:SetText("界面已解锁")
                 Library:Notify("界面已解锁", 2)
             end
+            Library.DynamicIsland:Show()
+            Library.DynamicIsland:Pulse()
+            task.delay(2, function()
+                Library.DynamicIsland:Hide()
+            end)
         end)
     end
 
@@ -6194,13 +6319,13 @@ end
 
 Library.Themes = {
     Default = {
-        FontColor = Color3.fromRGB(255, 255, 255);
+        FontColor = Color3.fromRGB(240, 240, 240);
         MainColor = Color3.fromRGB(28, 28, 28);
         BackgroundColor = Color3.fromRGB(20, 20, 20);
         SecondaryColor = Color3.fromRGB(38, 38, 38);
-        AccentColor = Color3.fromRGB(0, 170, 255);
+        AccentColor = Color3.fromRGB(0, 122, 255);
         OutlineColor = Color3.fromRGB(60, 60, 60);
-        RiskColor = Color3.fromRGB(255, 50, 50);
+        RiskColor = Color3.fromRGB(255, 59, 48);
     },
     Dark = {
         FontColor = Color3.fromRGB(240, 240, 240);
@@ -6669,7 +6794,7 @@ function Library:CreateConfirmation(Title, Message, ConfirmText, CancelText, Cal
     })
     
     local UICorner = Library:Create('UICorner', {
-        CornerRadius = UDim.new(0, 8);
+        CornerRadius = UDim.new(0, 12);
         Parent = Container;
     })
     
@@ -6729,7 +6854,7 @@ function Library:CreateConfirmation(Title, Message, ConfirmText, CancelText, Cal
     })
     
     local ConfirmUICorner = Library:Create('UICorner', {
-        CornerRadius = UDim.new(0, 4);
+        CornerRadius = UDim.new(0, 6);
         Parent = ConfirmButton;
     })
     
@@ -6745,7 +6870,7 @@ function Library:CreateConfirmation(Title, Message, ConfirmText, CancelText, Cal
     })
     
     local CancelUICorner = Library:Create('UICorner', {
-        CornerRadius = UDim.new(0, 4);
+        CornerRadius = UDim.new(0, 6);
         Parent = CancelButton;
     })
     
@@ -6907,7 +7032,7 @@ function Library:CreateProgressBar(Text, Total, Options)
     })
     
     local UICorner = Library:Create('UICorner', {
-        CornerRadius = UDim.new(0, 4);
+        CornerRadius = UDim.new(0, 6);
         Parent = Inner;
     })
     
@@ -6920,7 +7045,7 @@ function Library:CreateProgressBar(Text, Total, Options)
     })
     
     local FillUICorner = Library:Create('UICorner', {
-        CornerRadius = UDim.new(0, 4);
+        CornerRadius = UDim.new(0, 6);
         Parent = Fill;
     })
     
@@ -7099,7 +7224,7 @@ function Library:CreateContextMenu(Items, Options)
     })
     
     local UICorner = Library:Create('UICorner', {
-        CornerRadius = UDim.new(0, 6);
+        CornerRadius = UDim.new(0, 8);
         Parent = Container;
     })
     
@@ -7363,7 +7488,7 @@ function Library:CreateValueDisplay(Values, Options)
     })
     
     local UICorner = Library:Create('UICorner', {
-        CornerRadius = UDim.new(0, 6);
+        CornerRadius = UDim.new(0, 8);
         Parent = Container;
     })
     
@@ -7483,7 +7608,7 @@ Library:GiveSignal(ScreenGui.DescendantAdded:Connect(function(Instance)
             local UICorner = Instance:FindFirstChildOfClass("UICorner")
             if not UICorner then
                 Library:Create('UICorner', {
-                    CornerRadius = UDim.new(0, 4);
+                    CornerRadius = UDim.new(0, 6);
                     Parent = Instance;
                 })
             end
