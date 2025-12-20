@@ -1589,7 +1589,7 @@ do
                 Active = false;
                 Size = UDim2.new(1, 0, 0, 15);
                 TextSize = 13;
-                Text = "解除绑定";
+                Text = "Unbind";
                 ZIndex = 16;
                 Parent = UnbindInner;
             })
@@ -2124,7 +2124,7 @@ do
         Size = UDim2.new(1, -5, 1, 0);
         Font = Library.Font;
         PlaceholderColor3 = Color3.fromRGB(190, 190, 190);
-        PlaceholderText = 'Hex颜色';
+        PlaceholderText = 'Hex';
         Text = '#FFFFFF';
         TextColor3 = Library.FontColor;
         TextSize = 14;
@@ -2144,7 +2144,7 @@ do
 
     local RgbBox = Library:Create(RgbBoxBase.Frame:FindFirstChild('TextBox'), {
         Text = '255, 255, 255',
-        PlaceholderText = 'RGB颜色',
+        PlaceholderText = 'RGB',
         TextColor3 = Library.FontColor
     })
 
@@ -2313,29 +2313,29 @@ do
             end)
         end
 
-        ContextMenu:AddOption('复制颜色', function()
+        ContextMenu:AddOption('Copy Color', function()
             Library.ColorClipboard = ColorPicker.Value
-            Library:Notify('颜色已复制!', 2)
+            Library:Notify('Color copied!', 2)
         end)
 
         ColorPicker.SetValueRGB = function(...) end
-        ContextMenu:AddOption('粘贴颜色', function()
+        ContextMenu:AddOption('Paste Color', function()
             if not Library.ColorClipboard then
-                Library:Notify('您尚未复制任何颜色!', 2)
+                Library:Notify('You have not copied any color!', 2)
                 return
             end
 
             ColorPicker:SetValueRGB(Library.ColorClipboard)
         end)
 
-        ContextMenu:AddOption('复制HEX', function()
+        ContextMenu:AddOption('Copy HEX', function()
             pcall(setclipboard, ColorPicker.Value:ToHex())
-            Library:Notify('HEX代码已复制到剪贴板!', 2)
+            Library:Notify('HEX code copied to clipboard!', 2)
         end)
 
-        ContextMenu:AddOption('复制RGB', function()
+        ContextMenu:AddOption('Copy RGB', function()
             pcall(setclipboard, table.concat({ math.floor(ColorPicker.Value.R * 255), math.floor(ColorPicker.Value.G * 255), math.floor(ColorPicker.Value.B * 255) }, ', '))
-            Library:Notify('RGB值已复制到剪贴板!', 2)
+            Library:Notify('RGB values copied to clipboard!', 2)
         end)
     end
     ColorPicker.ContextMenu = ContextMenu
@@ -2678,7 +2678,7 @@ function BaseAddonsFuncs:AddDropdown(Idx, Info)
             Size = UDim2.new(0.9, -5, 1, 0);
             Font = Library.Font;
             PlaceholderColor3 = Color3.fromRGB(190, 190, 190);
-            PlaceholderText = '搜索...';
+            PlaceholderText = 'Search...';
             Text = '';
             TextColor3 = Library.FontColor;
             TextSize = 14;
@@ -3511,7 +3511,7 @@ do
                     Library:AddToRegistry(Button.Label, { TextColor3 = 'AccentColor' })
 
                     Button.Label.TextColor3 = Library.AccentColor
-                    Button.Label.Text = '确定吗?'
+                    Button.Label.Text = 'Are you sure?'
                     Button.Locked = true
 
                     local clicked = WaitForEvent(Button.Outer.InputBegan, 0.5, ValidateClick)
@@ -4245,7 +4245,7 @@ function BaseGroupboxFuncs:AddSlider(Idx, Info)
     local DisplayLabel = Library:CreateLabel({
         Size = UDim2.new(1, 0, 1, 0);
         TextSize = 14;
-        Text = '无限';
+        Text = 'inf';
         ZIndex = 9;
         Parent = SliderInner;
         RichText = true;
@@ -4331,7 +4331,7 @@ function BaseGroupboxFuncs:AddSlider(Idx, Info)
     end
     
     function Slider:SetMax(Value)
-        assert(Value > Slider.Min, '最大值不能小于当前最小值。')
+        assert(Value > Slider.Min, 'Max cannot be less than current min.')
         
         Slider.Value = math.clamp(Slider.Value, Slider.Min, Value)
         Slider.Max = Value
@@ -4339,7 +4339,7 @@ function BaseGroupboxFuncs:AddSlider(Idx, Info)
     end
     
     function Slider:SetMin(Value)
-        assert(Value < Slider.Max, '最小值不能大于当前最大值。')
+        assert(Value < Slider.Max, 'Min cannot be greater than current max.')
 
         Slider.Value = math.clamp(Slider.Value, Value, Slider.Max)
         Slider.Min = Value
@@ -4550,7 +4550,7 @@ local _KeybindLabel = Library:CreateLabel({
     Size = UDim2.new(1, 0, 0, 20);
     Position = UDim2.fromOffset(5, 2),
     TextXAlignment = Enum.TextXAlignment.Left,
-    Text = '快捷键';
+    Text = 'Keybinds';
     ZIndex = 104;
     Parent = KeybindInner;
 })
@@ -5184,7 +5184,7 @@ local Inner = Library:Create('Frame', {
                 IsNormal = false,
                 LockSize = false,
                 Visible = false,
-                Title = "警告",
+                Title = "Warning",
                 Text = ""
             };
             OriginalName = Name; 
@@ -5300,7 +5300,7 @@ do
                 Size = UDim2.new(1, 0, 0, 18);
                 Position = UDim2.new(0, 4, 0, 2);
                 TextSize = 14;
-                Text = "文本";
+                Text = "Text";
                 TextXAlignment = Enum.TextXAlignment.Left;
                 TextColor3 = Color3.fromRGB(255, 55, 55);
                 ZIndex = 7;
@@ -5315,7 +5315,7 @@ do
                 Position = UDim2.new(0, 4, 0, 20);
                 Size = UDim2.new(1, 0, 0, 14);
                 TextSize = 14;
-                Text = "文本";
+                Text = "Text";
                 TextWrapped = true,
                 TextXAlignment = Enum.TextXAlignment.Left;
                 TextYAlignment = Enum.TextYAlignment.Top;
@@ -6174,7 +6174,7 @@ do
             Size = UDim2.new(1, -10, 0, 20);
             BackgroundTransparency = 1;
             Font = Library.Font;
-            Text = "最小化";
+            Text = "Toggle UI";
             TextColor3 = Library.FontColor;
             TextSize = 14;
             TextXAlignment = Enum.TextXAlignment.Left;
@@ -6188,7 +6188,7 @@ do
             Size = UDim2.new(1, -10, 0, 20);
             BackgroundTransparency = 1;
             Font = Library.Font;
-            Text = "锁定界面";
+            Text = "Lock UI";
             TextColor3 = Library.FontColor;
             TextSize = 14;
             TextXAlignment = Enum.TextXAlignment.Left;
@@ -6201,7 +6201,7 @@ do
 
         ToggleUIButton.MouseButton1Down:Connect(function()
             Library:Toggle()
-            Library.DynamicIsland:SetText(if Library.Toggled then "UI 已打开" else "UI 已关闭")
+            Library.DynamicIsland:SetText(if Library.Toggled then "UI Opened" else "UI Closed")
             Library.DynamicIsland:Show()
             Library.DynamicIsland:Pulse()
             task.delay(2, function()
@@ -6211,14 +6211,14 @@ do
         
         LockUIButton.MouseButton1Down:Connect(function()
             Library.CantDragForced = not Library.CantDragForced
-            LockUIButton.Text = Library.CantDragForced and "解锁界面" or "锁定界面"
+            LockUIButton.Text = Library.CantDragForced and "Unlock UI" or "Lock UI"
             
             if Library.CantDragForced then
-                Library.DynamicIsland:SetText("界面已锁定")
-                Library:Notify("界面已锁定", 2)
+                Library.DynamicIsland:SetText("UI Locked")
+                Library:Notify("UI Locked", 2)
             else
-                Library.DynamicIsland:SetText("界面已解锁")
-                Library:Notify("界面已解锁", 2)
+                Library.DynamicIsland:SetText("UI Unlocked")
+                Library:Notify("UI Unlocked", 2)
             end
             Library.DynamicIsland:Show()
             Library.DynamicIsland:Pulse()
@@ -6556,7 +6556,7 @@ do
 
     function ThemeManager:CreateThemePicker(Parent)
         local ThemePicker = Parent:AddDropdown("ThemePicker", {
-            Text = "主题",
+            Text = "Theme",
             Values = {"Default", "Dark", "Light", "Purple", "Green"},
             Default = "Default",
             Callback = function(Value)
@@ -6566,7 +6566,7 @@ do
         })
 
         local ColorPicker = Parent:AddColorPicker("AccentColor", {
-            Text = "强调色",
+            Text = "Accent Color",
             Default = Library.AccentColor,
             Callback = function(Color)
                 Library.AccentColor = Color
@@ -6846,7 +6846,7 @@ function Library:CreateConfirmation(Title, Message, ConfirmText, CancelText, Cal
         BackgroundColor3 = Library.AccentColor;
         BorderColor3 = Library.AccentColorDark;
         Size = UDim2.new(0, 100, 0, 30);
-        Text = ConfirmText or "确认";
+        Text = ConfirmText or "Confirm";
         TextColor3 = Color3.new(1, 1, 1);
         TextSize = 14;
         ZIndex = 303;
@@ -6862,7 +6862,7 @@ function Library:CreateConfirmation(Title, Message, ConfirmText, CancelText, Cal
         BackgroundColor3 = Library.SecondaryColor;
         BorderColor3 = Library.OutlineColor;
         Size = UDim2.new(0, 100, 0, 30);
-        Text = CancelText or "取消";
+        Text = CancelText or "Cancel";
         TextColor3 = Library.FontColor;
         TextSize = 14;
         ZIndex = 303;
@@ -7465,7 +7465,7 @@ function Library:CreateValueDisplay(Values, Options)
     local DefaultOptions = {
         Position = UDim2.new(0, 10, 0, 10),
         Size = UDim2.new(0, 200, 0, 0),
-        Title = "数值显示",
+        Title = "Value Display",
         UpdateInterval = 0.1,
         AutoSize = true
     }
