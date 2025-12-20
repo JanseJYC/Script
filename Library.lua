@@ -1655,7 +1655,7 @@ do
                 KeyPicker.Value = "Unknown"
             end
 
-            KeyPicker.Modifiers = VerifyModifiers(if typeof(Modifiers) == "table" then Modifiers else KeyPicker.Modifiers)
+            KeyPicker.Modifiers = VerifyModifiers(if typeof(Modifiers) == "table" then Modifiers or KeyPicker.Modifiers)
             KeyPicker.DisplayValue = if GetTableSize(KeyPicker.Modifiers) > 0 then (table.concat(KeyPicker.Modifiers, " + ") .. " + " .. KeyPicker.Value) else KeyPicker.Value
 
             DisplayLabel.Text = KeyPicker.DisplayValue
@@ -4421,6 +4421,12 @@ function BaseGroupboxFuncs:AddSlider(Idx, Info)
     return Slider
 end
 
+    BaseGroupbox.__index = BaseGroupboxFuncs
+    BaseGroupbox.__namecall = function(Table, Key, ...)
+        return BaseGroupboxFuncs[Key](...)
+    end
+end
+
 local KeybindOuter = Library:Create('Frame', {
     AnchorPoint = Vector2.new(0, 0.5);
     BorderColor3 = Color3.new(0, 0, 0);
@@ -4994,7 +5000,7 @@ end
         Position = UDim2.new(0, 0, 0, 0);
         Size = UDim2.new(1, 0, 1, 0);
         ZIndex = 1;
-        Parent = MainSectionOuter;
+        Parent = MainSectionInner;
     })
 
     Library:AddToRegistry(MainSectionInner, {
@@ -7336,7 +7342,7 @@ function Library:CreateValueDisplay(Values, Options)
         for Name, Value in next, Display.Values do
             if not ValueLabels[Name] then
                 local Label = Library:CreateLabel({
-                    Size = UDim2.new(1, 0, 0, 18);
+                    Size = UDim2.new(1, 0, 1, 0);
                     Text = string.format("%s: %s", Name, tostring(Value));
                     TextSize = 12;
                     TextXAlignment = Enum.TextXAlignment.Left;
