@@ -288,20 +288,17 @@ local Library = {
     AnimationsEnabled = true;
 }
 
--- 提供缺失的接口，避免外部脚本调用时报错
 function Library:GetToggle(Idx)
     return Toggles[Idx]
 end
 
 function Library:ApplyToTab(Tab)
-    -- 兼容可能传入的表或实例，缺省为安全退出
     if not Tab then
         return
     end
 
     local Target = (typeof(Tab) == "table" and (Tab.TabFrame or Tab.Container or Tab.Frame)) or (typeof(Tab) == "Instance" and Tab) or nil
     if Target and typeof(Target) == "Instance" then
-        -- 仅在实例存在时登记主题颜色，避免 nil 访问
         Library:AddToRegistry(Target, {
             BackgroundColor3 = 'MainColor';
             BorderColor3 = 'OutlineColor';
@@ -2508,6 +2505,8 @@ do
                 ColorPicker.Sat = (MouseX - MinX) / (MaxX - MinX)
                 ColorPicker.Vib = 1 - ((MouseY - MinY) / (MaxY - MinY))
                 ColorPicker:Display()
+                Library:SafeCallback(ColorPicker.Callback, ColorPicker.Value, ColorPicker.Transparency)
+                Library:SafeCallback(ColorPicker.Changed, ColorPicker.Value, ColorPicker.Transparency)
 
                 RunService.RenderStepped:Wait()
             end
@@ -2525,6 +2524,8 @@ do
 
                 ColorPicker.Hue = ((MouseY - MinY) / (MaxY - MinY))
                 ColorPicker:Display()
+                Library:SafeCallback(ColorPicker.Callback, ColorPicker.Value, ColorPicker.Transparency)
+                Library:SafeCallback(ColorPicker.Changed, ColorPicker.Value, ColorPicker.Transparency)
 
                 RunService.RenderStepped:Wait()
             end
@@ -3410,7 +3411,6 @@ do
             Groupbox:Resize()
         end
 
-        -- 所有标签均支持附加控件（如 ColorPicker），无论是否换行
         setmetatable(Label, BaseAddons)
 
         Groupbox:AddBlank(5)
@@ -3427,7 +3427,6 @@ do
         return Label
     end
     
-    -- 允许 Groupbox 直接创建 Tabbox（嵌套标签组）
     function BaseGroupboxFuncs:AddTabbox(Info)
         Info = typeof(Info) == "table" and Info or { Name = tostring(Info or "Tabbox") }
 
@@ -3441,7 +3440,6 @@ do
             return nil
         end
 
-        -- 标题
         local TitleLabel = Library:CreateLabel({
             Size = UDim2.new(1, 0, 0, 14);
             TextSize = 14;
@@ -3570,7 +3568,6 @@ do
             return Tab
         end
 
-        -- 初始按钮宽度
         for _, btn in next, TabboxButtons:GetChildren() do
             if btn:IsA('GuiObject') then
                 btn.Size = UDim2.new(1, 0, 1, 0)
@@ -3580,12 +3577,9 @@ do
         return Tabbox
     end
     
-    -- 允许 Groupbox 直接添加颜色选择器（包装 Label 的 AddColorPicker）
     function BaseGroupboxFuncs:AddColorPicker(Idx, Info)
         Info = Info or {}
-        -- 优先使用 Title/Text 作为展示
         local titleText = Info.Title or Info.Text or Info.Name or "颜色选择"
-        -- 使用标签承载 ColorPicker（标签已挂载 BaseAddons，具备 AddColorPicker 方法）
         local HolderLabel = self:AddLabel(titleText, false, Idx and (Idx .. "_label") or nil)
         return HolderLabel:AddColorPicker(Idx, Info)
     end
@@ -8086,7 +8080,7 @@ function Library:CreateContextMenu(Items, Options)
     Options = Library:Validate(Options or {}, DefaultOptions)
     
     local ContextMenu = {
-        Open = false
+        IsOpen = false
     }
     
     local Container = Library:Create('Frame', {
@@ -8225,9 +8219,9 @@ function Library:CreateContextMenu(Items, Options)
     end)
     
     function ContextMenu:Open(Position)
-        if ContextMenu.Open then return end
+        if ContextMenu.IsOpen then return end
         
-        ContextMenu.Open = true
+        ContextMenu.IsOpen = true
         Container.Visible = true
         Container.Position = Position or Options.Position
         
@@ -8239,14 +8233,14 @@ function Library:CreateContextMenu(Items, Options)
     end
     
     function ContextMenu:Close()
-        if not ContextMenu.Open then return end
+        if not ContextMenu.IsOpen then return end
         
-        ContextMenu.Open = false
+        ContextMenu.IsOpen = false
         Container.Visible = false
     end
     
     function ContextMenu:Toggle(Position)
-        if ContextMenu.Open then
+        if ContextMenu.IsOpen then
             ContextMenu:Close()
         else
             ContextMenu:Open(Position)
@@ -8258,7 +8252,7 @@ function Library:CreateContextMenu(Items, Options)
     end
     
     Library:GiveSignal(InputService.InputBegan:Connect(function(Input)
-        if ContextMenu.Open and Input.UserInputType == Enum.UserInputType.MouseButton1 then
+        if ContextMenu.IsOpen and Input.UserInputType == Enum.UserInputType.MouseButton1 then
             local AbsPos, AbsSize = Container.AbsolutePosition, Container.AbsoluteSize
             local MousePos = Input.Position
             
