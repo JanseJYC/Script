@@ -10,7 +10,10 @@ local RunService = cloneref(game:GetService("RunService"))
 local TweenService = cloneref(game:GetService("TweenService"))
 local Lighting = game:GetService("Lighting")
 
-local LocalPlayer = Players.LocalPlayer or Players.PlayerAdded:Wait()
+local LocalPlayer = Players.LocalPlayer
+if not LocalPlayer then
+    LocalPlayer = Players.PlayerAdded:Wait()
+end
 local Mouse = cloneref(LocalPlayer:GetMouse())
 
 local setclipboard = setclipboard or nil
@@ -231,7 +234,7 @@ local Library = {
     RiskColor = Color3.fromRGB(255, 50, 50);
 
     Black = Color3.new(0, 0, 0);
-    Font = Enum.Font.GothamSemibold,
+    Font = Enum.Font.SourceSansSemibold or Enum.Font.GothamSemibold or Enum.Font.SourceSans;
 
     OpenedFrames = {};
     DependencyBoxes = {};
@@ -443,28 +446,24 @@ function Library:SetDPIScale(value)
 end
 
 function Library:SafeCallback(Func, ...)
-    if not (Func and typeof(Func) == "function") then
+    if not Func or typeof(Func) ~= "function" then
         return
     end
 
-    local Result = table.pack(xpcall(Func, function(Error)
-        task.defer(error, debug.traceback(Error, 2))
-        if Library.NotifyOnError then
-            Library:Notify(Error)
-        end
+    local success, result = xpcall(Func, function(err)
+        warn("Callback error:", err)
+        return debug.traceback(err)
+    end, ...)
 
-        return Error
-    end, ...))
-
-    if not Result[1] then
+    if not success then
         return nil
     end
 
-    return table.unpack(Result, 2, Result.n)
+    return result
 end
 
 function Library:AttemptSave()
-    if (not Library.SaveManager) then return end
+    if not Library.SaveManager then return end
     Library.SaveManager:Save()
 end
 
@@ -476,7 +475,7 @@ function Library:Create(Class, Properties)
     end
 
     for Property, Value in next, Properties do
-        if (Property == "Size" or Property == "Position") then
+        if Property == "Size" or Property == "Position" then
             Value = ApplyDPIScale(Value)
         elseif Property == "TextSize" then
             Value = ApplyTextScale(Value)
@@ -486,7 +485,7 @@ function Library:Create(Class, Properties)
             _Instance[Property] = Value
         end)
 
-        if (not success) then
+        if not success then
             warn(err)
         end
     end
@@ -524,6 +523,8 @@ function Library:CreateLabel(Properties, IsHud)
 end
 
 function Library:MakeDraggable(Instance, Cutoff, IsMainWindow)
+    if not Instance then return end
+    
     Instance.Active = true
 
     if Library.IsMobile == false then
@@ -625,6 +626,8 @@ function Library:MakeDraggable(Instance, Cutoff, IsMainWindow)
 end
 
 function Library:MakeDraggableUsingParent(Instance, Parent, Cutoff, IsMainWindow)
+    if not Instance or not Parent then return end
+    
     Instance.Active = true
 
     if Library.IsMobile == false then
@@ -674,6 +677,8 @@ function Library:MakeResizable(Instance, MinSize)
         return
     end
 
+    if not Instance then return end
+    
     Instance.Active = true
     
     local ResizerImage_Size = 25 * DPIScale
@@ -904,14 +909,18 @@ function Library:AddToolTip(InfoStr, DisabledInfoStr, HoverInstance)
 end
 
 function Library:OnHighlight(HighlightInstance, Instance, Properties, PropertiesDefault, condition)
+    if not HighlightInstance or not Instance then return end
+    
     local function undoHighlight()
         local Reg = Library.RegistryMap[Instance]
 
         for Property, ColorIdx in next, PropertiesDefault do
-            Instance[Property] = Library[ColorIdx] or ColorIdx
+            if Instance[Property] ~= nil then
+                Instance[Property] = Library[ColorIdx] or ColorIdx
 
-            if Reg and Reg.Properties[Property] then
-                Reg.Properties[Property] = ColorIdx
+                if Reg and Reg.Properties[Property] then
+                    Reg.Properties[Property] = ColorIdx
+                end
             end
         end
     end
@@ -925,10 +934,12 @@ function Library:OnHighlight(HighlightInstance, Instance, Properties, Properties
         local Reg = Library.RegistryMap[Instance]
 
         for Property, ColorIdx in next, Properties do
-            Instance[Property] = Library[ColorIdx] or ColorIdx
+            if Instance[Property] ~= nil then
+                Instance[Property] = Library[ColorIdx] or ColorIdx
 
-            if Reg and Reg.Properties[Property] then
-                Reg.Properties[Property] = ColorIdx
+                if Reg and Reg.Properties[Property] then
+                    Reg.Properties[Property] = ColorIdx
+                end
             end
         end
     end
@@ -939,18 +950,24 @@ function Library:OnHighlight(HighlightInstance, Instance, Properties, Properties
 end
 
 function Library:MouseIsOverOpenedFrame(Input)
-    local Pos = Mouse
+    if not Mouse then return false end
+    
+    local Pos
     if Library.IsMobile and Input then 
         Pos = Input.Position
+    else
+        Pos = Vector2.new(Mouse.X, Mouse.Y)
     end
 
     for Frame, _ in next, Library.OpenedFrames do
-        local AbsPos, AbsSize = Frame.AbsolutePosition, Frame.AbsoluteSize
+        if Frame and Frame.Parent then
+            local AbsPos, AbsSize = Frame.AbsolutePosition, Frame.AbsoluteSize
 
-        if Pos.X >= AbsPos.X and Pos.X <= AbsPos.X + AbsSize.X
-            and Pos.Y >= AbsPos.Y and Pos.Y <= AbsPos.Y + AbsSize.Y then
+            if Pos.X >= AbsPos.X and Pos.X <= AbsPos.X + AbsSize.X
+                and Pos.Y >= AbsPos.Y and Pos.Y <= AbsPos.Y + AbsSize.Y then
 
-            return true
+                return true
+            end
         end
     end
 
@@ -958,10 +975,19 @@ function Library:MouseIsOverOpenedFrame(Input)
 end
 
 function Library:MouseIsOverFrame(Frame, Input)
-    local Pos = Mouse
+    if not Frame then return false end
+    
+    local Pos
     if Library.IsMobile and Input then 
         Pos = Input.Position
+    else
+        if Mouse and Mouse.X then
+            Pos = Vector2.new(Mouse.X, Mouse.Y)
+        else
+            return false
+        end
     end
+    
     local AbsPos, AbsSize = Frame.AbsolutePosition, Frame.AbsoluteSize
 
     if Pos.X >= AbsPos.X and Pos.X <= AbsPos.X + AbsSize.X
@@ -975,13 +1001,17 @@ end
 
 function Library:UpdateDependencyBoxes()
     for _, Depbox in next, Library.DependencyBoxes do
-        Depbox:Update()
+        if Depbox.Update then
+            Depbox:Update()
+        end
     end
 end
 
 function Library:UpdateDependencyGroupboxes()
     for _, Depbox in next, Library.DependencyGroupboxes do
-        Depbox:Update()
+        if Depbox.Update then
+            Depbox:Update()
+        end
     end
 end
 
@@ -1001,6 +1031,8 @@ end
 Library.AccentColorDark = Library:GetDarkerColor(Library.AccentColor)
 
 function Library:AddToRegistry(Instance, Properties, IsHud)
+    if not Instance then return end
+    
     local Idx = #Library.Registry + 1
     local Data = {
         Instance = Instance;
@@ -1017,6 +1049,8 @@ function Library:AddToRegistry(Instance, Properties, IsHud)
 end
 
 function Library:RemoveFromRegistry(Instance)
+    if not Instance then return end
+    
     local Data = Library.RegistryMap[Instance]
 
     if Data then
@@ -1038,11 +1072,15 @@ end
 
 function Library:UpdateColorsUsingRegistry()
     for Idx, Object in next, Library.Registry do
-        for Property, ColorIdx in next, Object.Properties do
-            if typeof(ColorIdx) == "string" then
-                Object.Instance[Property] = Library[ColorIdx]
-            elseif typeof(ColorIdx) == 'function' then
-                Object.Instance[Property] = ColorIdx()
+        if Object.Instance and Object.Instance.Parent then
+            for Property, ColorIdx in next, Object.Properties do
+                if typeof(ColorIdx) == "string" then
+                    if Library[ColorIdx] then
+                        Object.Instance[Property] = Library[ColorIdx]
+                    end
+                elseif typeof(ColorIdx) == 'function' then
+                    Object.Instance[Property] = ColorIdx()
+                end
             end
         end
     end
@@ -1070,7 +1108,9 @@ function Library:Unload()
     end
 
     for _, Tooltip in Tooltips do
-        Library:SafeCallback(Tooltip.Destroy, Tooltip)
+        if Tooltip.Destroy then
+            Library:SafeCallback(Tooltip.Destroy, Tooltip)
+        end
     end
 
     Library.Unloaded = true
@@ -1385,9 +1425,14 @@ do
                 KeybindsToggleInner.BorderColor3 = State and Library.AccentColorDark or Library.OutlineColor
                 KeybindsToggleLabel.TextColor3 = State and Library.AccentColor or Library.FontColor
 
-                Library.RegistryMap[KeybindsToggleInner].Properties.BackgroundColor3 = State and 'AccentColor' or 'MainColor'
-                Library.RegistryMap[KeybindsToggleInner].Properties.BorderColor3 = State and 'AccentColorDark' or 'OutlineColor'
-                Library.RegistryMap[KeybindsToggleLabel].Properties.TextColor3 = State and 'AccentColor' or 'FontColor'
+                if Library.RegistryMap[KeybindsToggleInner] then
+                    Library.RegistryMap[KeybindsToggleInner].Properties.BackgroundColor3 = State and 'AccentColor' or 'MainColor'
+                    Library.RegistryMap[KeybindsToggleInner].Properties.BorderColor3 = State and 'AccentColorDark' or 'OutlineColor'
+                end
+                
+                if Library.RegistryMap[KeybindsToggleLabel] then
+                    Library.RegistryMap[KeybindsToggleLabel].Properties.TextColor3 = State and 'AccentColor' or 'FontColor'
+                end
             end
 
             function KeybindsToggle:SetText(Text)
@@ -1493,7 +1538,9 @@ do
                 KeyPicker.Mode = Mode
 
                 Label.TextColor3 = Library.AccentColor
-                Library.RegistryMap[Label].Properties.TextColor3 = 'AccentColor'
+                if Library.RegistryMap[Label] then
+                    Library.RegistryMap[Label].Properties.TextColor3 = 'AccentColor'
+                end
 
                 ModeSelectOuter.Visible = false
             end
@@ -1502,7 +1549,9 @@ do
                 KeyPicker.Mode = nil
 
                 Label.TextColor3 = Library.FontColor
-                Library.RegistryMap[Label].Properties.TextColor3 = 'FontColor'
+                if Library.RegistryMap[Label] then
+                    Library.RegistryMap[Label].Properties.TextColor3 = 'FontColor'
+                end
             end
 
             Label.InputBegan:Connect(function(Input)
@@ -1899,12 +1948,11 @@ do
         Callback = Info.Callback or function(Color) end;
     }
 
-    function ColorPicker:SetHSVFromRGB(Color)
+    ColorPicker.SetHSVFromRGB = function(self, Color)
         local H, S, V = Color:ToHSV()
-
-        ColorPicker.Hue = H
-        ColorPicker.Sat = S
-        ColorPicker.Vib = V
+        self.Hue = H
+        self.Sat = S
+        self.Vib = V
     end
 
     ColorPicker:SetHSVFromRGB(ColorPicker.Value)
@@ -2314,26 +2362,26 @@ do
         Parent = HueSelectorInner;
     })
 
-    function ColorPicker:Display()
-        ColorPicker.Value = Color3.fromHSV(ColorPicker.Hue, ColorPicker.Sat, ColorPicker.Vib)
-        SatVibMap.BackgroundColor3 = Color3.fromHSV(ColorPicker.Hue, 1, 1)
+    ColorPicker.Display = function(self)
+        self.Value = Color3.fromHSV(self.Hue, self.Sat, self.Vib)
+        SatVibMap.BackgroundColor3 = Color3.fromHSV(self.Hue, 1, 1)
 
         Library:Create(DisplayFrame, {
-            BackgroundColor3 = ColorPicker.Value;
-            BackgroundTransparency = ColorPicker.Transparency;
-            BorderColor3 = Library:GetDarkerColor(ColorPicker.Value);
+            BackgroundColor3 = self.Value;
+            BackgroundTransparency = self.Transparency;
+            BorderColor3 = Library:GetDarkerColor(self.Value);
         })
 
         if TransparencyBoxInner then
-            TransparencyBoxInner.BackgroundColor3 = ColorPicker.Value
-            TransparencyCursor.Position = UDim2.new(1 - ColorPicker.Transparency, 0, 0, 0)
+            TransparencyBoxInner.BackgroundColor3 = self.Value
+            TransparencyCursor.Position = UDim2.new(1 - self.Transparency, 0, 0, 0)
         end
 
-        CursorOuter.Position = UDim2.new(ColorPicker.Sat, 0, 1 - ColorPicker.Vib, 0)
-        HueCursor.Position = UDim2.new(0, 0, ColorPicker.Hue, 0)
+        CursorOuter.Position = UDim2.new(self.Sat, 0, 1 - self.Vib, 0)
+        HueCursor.Position = UDim2.new(0, 0, self.Hue, 0)
 
-        HueBox.Text = '#' .. ColorPicker.Value:ToHex()
-        RgbBox.Text = table.concat({ math.floor(ColorPicker.Value.R * 255), math.floor(ColorPicker.Value.G * 255), math.floor(ColorPicker.Value.B * 255) }, ', ')
+        HueBox.Text = '#' .. self.Value:ToHex()
+        RgbBox.Text = table.concat({ math.floor(self.Value.R * 255), math.floor(self.Value.G * 255), math.floor(self.Value.B * 255) }, ', ')
     end
 
     function ColorPicker:OnChanged(Func)
@@ -2377,13 +2425,18 @@ do
         Library:SafeCallback(ColorPicker.Changed, ColorPicker.Value, ColorPicker.Transparency)
     end
 
-    function ColorPicker:SetValueRGB(Color, Transparency)
-        ColorPicker.Transparency = Transparency or 0
-        ColorPicker:SetHSVFromRGB(Color)
-        ColorPicker:Display()
+    ColorPicker.SetValueRGB = function(self, Color, Transparency)
+        if self._settingValue then return end
+        self._settingValue = true
+        
+        self.Transparency = Transparency or 0
+        self:SetHSVFromRGB(Color)
+        self:Display()
+        
+        self._settingValue = false
 
-        Library:SafeCallback(ColorPicker.Callback, ColorPicker.Value, ColorPicker.Transparency)
-        Library:SafeCallback(ColorPicker.Changed, ColorPicker.Value, ColorPicker.Transparency)
+        Library:SafeCallback(self.Callback, self.Value, self.Transparency)
+        Library:SafeCallback(self.Changed, self.Value, self.Transparency)
     end
 
     HueBox.FocusLost:Connect(function(enter)
@@ -2892,7 +2945,9 @@ function BaseAddonsFuncs:AddDropdown(Idx, Info)
                 end
 
                 ButtonLabel.TextColor3 = Selected and Library.AccentColor or (IsDisabled and Library.DisabledAccentColor or Library.FontColor)
-                Library.RegistryMap[ButtonLabel].Properties.TextColor3 = Selected and 'AccentColor' or (IsDisabled and 'DisabledAccentColor' or 'FontColor')
+                if Library.RegistryMap[ButtonLabel] then
+                    Library.RegistryMap[ButtonLabel].Properties.TextColor3 = Selected and 'AccentColor' or (IsDisabled and 'DisabledAccentColor' or 'FontColor')
+                end
             end
 
             if not IsDisabled then
@@ -3005,8 +3060,7 @@ function BaseAddonsFuncs:AddDropdown(Idx, Info)
         Dropdown.Visible = Visibility
 
         DropdownOuter.Visible = Dropdown.Visible
-        if not Dropdown.Visible then Dropdown:CloseDropdown()
-end
+        if not Dropdown.Visible then Dropdown:CloseDropdown() end
     end
 
     function Dropdown:SetDisabled(Disabled)
@@ -3725,7 +3779,9 @@ do
     function Textbox:UpdateColors()
         Box.TextColor3 = Textbox.Disabled and Library.DisabledAccentColor or Library.FontColor
 
-        Library.RegistryMap[Box].Properties.TextColor3 = Textbox.Disabled and 'DisabledAccentColor' or 'FontColor'
+        if Library.RegistryMap[Box] then
+            Library.RegistryMap[Box].Properties.TextColor3 = Textbox.Disabled and 'DisabledAccentColor' or 'FontColor'
+        end
     end
 
     function Textbox:Display()
@@ -3952,9 +4008,13 @@ function BaseGroupboxFuncs:AddToggle(Idx, Info)
             ToggleInner.BackgroundColor3 = Toggle.Value and Library.DisabledAccentColor or Library.SecondaryColor
             ToggleInner.BorderColor3 = Library.DisabledOutlineColor
 
-            Library.RegistryMap[ToggleInner].Properties.BackgroundColor3 = Toggle.Value and 'DisabledAccentColor' or 'SecondaryColor'
-            Library.RegistryMap[ToggleInner].Properties.BorderColor3 = 'DisabledOutlineColor'
-            Library.RegistryMap[ToggleLabel].Properties.TextColor3 = 'DisabledTextColor'
+            if Library.RegistryMap[ToggleInner] then
+                Library.RegistryMap[ToggleInner].Properties.BackgroundColor3 = Toggle.Value and 'DisabledAccentColor' or 'SecondaryColor'
+                Library.RegistryMap[ToggleInner].Properties.BorderColor3 = 'DisabledOutlineColor'
+            end
+            if Library.RegistryMap[ToggleLabel] then
+                Library.RegistryMap[ToggleLabel].Properties.TextColor3 = 'DisabledTextColor'
+            end
 
             return
         end
@@ -3964,10 +4024,14 @@ function BaseGroupboxFuncs:AddToggle(Idx, Info)
         ToggleInner.BackgroundColor3 = Toggle.Value and Library.AccentColor or Library.SecondaryColor
         ToggleInner.BorderColor3 = Toggle.Value and Library.AccentColorDark or Library.OutlineColor
 
-        Library.RegistryMap[ToggleInner].Properties.BackgroundColor3 = Toggle.Value and 'AccentColor' or 'SecondaryColor'
-        Library.RegistryMap[ToggleInner].Properties.BorderColor3 = Toggle.Value and 'AccentColorDark' or 'OutlineColor'
+        if Library.RegistryMap[ToggleInner] then
+            Library.RegistryMap[ToggleInner].Properties.BackgroundColor3 = Toggle.Value and 'AccentColor' or 'SecondaryColor'
+            Library.RegistryMap[ToggleInner].Properties.BorderColor3 = Toggle.Value and 'AccentColorDark' or 'OutlineColor'
+        end
 
-        Library.RegistryMap[ToggleLabel].Properties.TextColor3 = Toggle.Risky and 'RiskColor' or nil
+        if Library.RegistryMap[ToggleLabel] then
+            Library.RegistryMap[ToggleLabel].Properties.TextColor3 = Toggle.Risky and 'RiskColor' or nil
+        end
     end
 
     function Toggle:OnChanged(Func)
@@ -4211,10 +4275,14 @@ function BaseGroupboxFuncs:AddSlider(Idx, Info)
         Fill.BackgroundColor3 = Slider.Disabled and Library.DisabledAccentColor or Library.AccentColor
         Fill.BorderColor3 = Slider.Disabled and Library.DisabledOutlineColor or Library.AccentColorDark
 
-        Library.RegistryMap[HideBorderRight].Properties.BackgroundColor3 = Slider.Disabled and 'DisabledAccentColor' or 'AccentColor'
+        if Library.RegistryMap[HideBorderRight] then
+            Library.RegistryMap[HideBorderRight].Properties.BackgroundColor3 = Slider.Disabled and 'DisabledAccentColor' or 'AccentColor'
+        end
 
-        Library.RegistryMap[Fill].Properties.BackgroundColor3 = Slider.Disabled and 'DisabledAccentColor' or 'AccentColor'
-        Library.RegistryMap[Fill].Properties.BorderColor3 = Slider.Disabled and 'DisabledOutlineColor' or 'AccentColorDark'
+        if Library.RegistryMap[Fill] then
+            Library.RegistryMap[Fill].Properties.BackgroundColor3 = Slider.Disabled and 'DisabledAccentColor' or 'AccentColor'
+            Library.RegistryMap[Fill].Properties.BorderColor3 = Slider.Disabled and 'DisabledOutlineColor' or 'AccentColorDark'
+        end
     end
     
     function Slider:Display()
@@ -4931,19 +4999,20 @@ function Library:CreateWindow(...)
         ImageColor3 = 'AccentColor';
     })
 
-    Library:MakeDraggable(Outer, 25, true)
-    if WindowInfo.Resizable then Library:MakeResizable(Outer, Library.MinSize)
+Library:MakeDraggable(Outer, 25, true)
+if WindowInfo.Resizable then 
+    Library:MakeResizable(Outer, Library.MinSize)
 end
 
-    local Inner = Library:Create('Frame', {
-        BackgroundColor3 = Library.MainColor;
-        BorderColor3 = Library.AccentColor;
-        BorderMode = Enum.BorderMode.Inset;
-        Position = UDim2.new(0, 1, 0, 1);
-        Size = UDim2.new(1, -2, 1, -2);
-        ZIndex = 1;
-        Parent = Outer;
-    })
+local Inner = Library:Create('Frame', {
+    BackgroundColor3 = Library.MainColor;
+    BorderColor3 = Library.AccentColor;
+    BorderMode = Enum.BorderMode.Inset;
+    Position = UDim2.new(0, 1, 0, 1);
+    Size = UDim2.new(1, -2, 1, -2);
+    ZIndex = 1;
+    Parent = Outer;
+})
 
     local InnerUICorner = Library:Create('UICorner', {
         CornerRadius = UDim.new(0, 8);
@@ -5000,7 +5069,7 @@ end
         Position = UDim2.new(0, 0, 0, 0);
         Size = UDim2.new(1, 0, 1, 0);
         ZIndex = 1;
-        Parent = MainSectionInner;
+        Parent = MainSectionOuter;
     })
 
     Library:AddToRegistry(MainSectionInner, {
@@ -5378,8 +5447,7 @@ do
             TopBar.Visible = Tab.WarningBox.Visible
             TopBarLabel.Text = Tab.WarningBox.Title
             TopBarTextLabel.Text = Tab.WarningBox.Text
-            if TopBar.Visible then Tab:Resize()
-end
+            if TopBar.Visible then Tab:Resize() end
 
             TopBar.BorderColor3 = Tab.WarningBox.IsNormal == true and Color3.fromRGB(27, 42, 53) or Color3.fromRGB(248, 51, 51)
             TopBarInner.BorderColor3 = Tab.WarningBox.IsNormal == true and Library.OutlineColor or Color3.fromRGB(0, 0, 0)
@@ -5410,7 +5478,9 @@ end
 
             Blocker.BackgroundTransparency = 0
             TabButton.BackgroundColor3 = Library.MainColor
-            Library.RegistryMap[TabButton].Properties.BackgroundColor3 = 'MainColor'
+            if Library.RegistryMap[TabButton] then
+                Library.RegistryMap[TabButton].Properties.BackgroundColor3 = 'MainColor'
+            end
             TabFrame.Visible = true
 
             Tab:Resize()
@@ -5420,7 +5490,9 @@ end
         function Tab:HideTab()
             Blocker.BackgroundTransparency = 1
             TabButton.BackgroundColor3 = Library.BackgroundColor
-            Library.RegistryMap[TabButton].Properties.BackgroundColor3 = 'BackgroundColor'
+            if Library.RegistryMap[TabButton] then
+                Library.RegistryMap[TabButton].Properties.BackgroundColor3 = 'BackgroundColor'
+            end
             TabFrame.Visible = false
         end
         Tab.Hide = Tab.HideTab
@@ -5688,7 +5760,9 @@ end
                     Block.Visible = true
 
                     Button.BackgroundColor3 = Library.BackgroundColor
-                    Library.RegistryMap[Button].Properties.BackgroundColor3 = 'BackgroundColor'
+                    if Library.RegistryMap[Button] then
+                        Library.RegistryMap[Button].Properties.BackgroundColor3 = 'BackgroundColor'
+                    end
 
                     Tab:Resize()
                 end
@@ -5698,7 +5772,9 @@ end
                     Block.Visible = false
 
                     Button.BackgroundColor3 = Library.MainColor
-                    Library.RegistryMap[Button].Properties.BackgroundColor3 = 'MainColor'
+                    if Library.RegistryMap[Button] then
+                        Library.RegistryMap[Button].Properties.BackgroundColor3 = 'MainColor'
+                    end
                 end
 
                 function Tab:Resize()
@@ -7436,5 +7512,4 @@ if getgenv().skip_getgenv_linoria ~= true then
     getgenv().Library = Library 
 end
 
-end
 return Library
