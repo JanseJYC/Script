@@ -1,3 +1,4 @@
+--By霖溺
 local cloneref = (cloneref or clonereference or function(instance: any)
     return instance
 end)
@@ -162,8 +163,8 @@ local Library = {
     Notifications = {},
 
     ToggleKeybind = Enum.KeyCode.RightControl,
-    TweenInfo = TweenInfo.new(0.2, Enum.EasingStyle.Quint, Enum.EasingDirection.Out),
-    NotifyTweenInfo = TweenInfo.new(0.3, Enum.EasingStyle.Back, Enum.EasingDirection.Out),
+    TweenInfo = TweenInfo.new(0.1, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
+    NotifyTweenInfo = TweenInfo.new(0.25, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
 
     Toggled = false,
     Unloaded = false,
@@ -190,16 +191,16 @@ local Library = {
 
     IsLightTheme = false,
     Scheme = {
-        BackgroundColor = Color3.fromRGB(10, 10, 15),
-        MainColor = Color3.fromRGB(20, 20, 30),
-        AccentColor = Color3.fromRGB(100, 200, 255),
-        OutlineColor = Color3.fromRGB(40, 50, 70),
-        FontColor = Color3.fromRGB(220, 220, 255),
-        Font = Font.fromEnum(Enum.Font.Gotham),
+              BackgroundColor = Color3.fromRGB(15, 15, 15),
+        MainColor = Color3.fromRGB(25, 25, 25),
+        AccentColor = Color3.fromRGB(125, 85, 255),
+        OutlineColor = Color3.fromRGB(40, 40, 40),
+        FontColor = Color3.new(1, 1, 1),
+        Font = Font.fromEnum(Enum.Font.Code),
 
-        Red = Color3.fromRGB(255, 100, 120),
-        Dark = Color3.new(0.05, 0.05, 0.1),
-        White = Color3.new(0.95, 0.95, 1),
+        Red = Color3.fromRGB(255, 50, 50),
+        Dark = Color3.new(0, 0, 0),
+        White = Color3.new(1, 1, 1),
     },
 
     Registry = {},
@@ -225,6 +226,7 @@ else
 end
 
 local Templates = {
+    --// UI \\-
     Frame = {
         BorderSizePixel = 0,
     },
@@ -269,11 +271,12 @@ local Templates = {
         ApplyStrokeMode = Enum.ApplyStrokeMode.Border,
     },
 
+    --// Library \\--
     Window = {
         Title = "No Title",
         Footer = "No Footer",
         Position = UDim2.fromOffset(6, 6),
-        Size = UDim2.fromOffset(750, 500),
+        Size = UDim2.fromOffset(720, 600),
         IconSize = UDim2.fromOffset(30, 30),
         AutoShow = true,
         Center = true,
@@ -283,7 +286,7 @@ local Templates = {
         CornerRadius = 8,
         NotifySide = "Right",
         ShowCustomCursor = true,
-        Font = Enum.Font.Gotham,
+        Font = Enum.Font.Code,
         ToggleKeybind = Enum.KeyCode.RightControl,
         MobileButtonsSide = "Left",
         UnlockMouseWhileOpen = true,
@@ -383,6 +386,7 @@ local Templates = {
         Visible = true,
     },
 
+    --// Addons \\-
     KeyPicker = {
         Text = "KeyPicker",
         Default = "None",
@@ -413,6 +417,7 @@ local Sizes = {
     Right = { 0.5, 1 },
 }
 
+--// Basic Functions \\--
 local function ApplyDPIScale(Dimension, ExtraOffset)
     if typeof(Dimension) == "UDim" then
         return UDim.new(Dimension.Scale, Dimension.Offset * Library.DPIScale)
@@ -574,8 +579,10 @@ local function CheckDepbox(Box, Search)
             ElementInfo.Holder.Visible = false
             continue
         elseif ElementInfo.SubButton then
+            --// Check if any of the Buttons Name matches with Search
             local Visible = false
 
+            --// Check if Search matches Element's Name and if Element is Visible
             if ElementInfo.Text:lower():match(Search) and ElementInfo.Visible then
                 Visible = true
             else
@@ -594,6 +601,7 @@ local function CheckDepbox(Box, Search)
             continue
         end
 
+        --// Check if Search matches Element's Name and if Element is Visible
         if ElementInfo.Text and ElementInfo.Text:lower():match(Search) and ElementInfo.Visible then
             ElementInfo.Holder.Visible = true
             VisibleElements += 1
@@ -773,6 +781,7 @@ function Library:UpdateSearch(SearchText)
 
         local HasVisible = false
 
+        --// Loop through Groupboxes to get Elements Info
         for _, Groupbox in pairs(Tab.Groupboxes) do
             local VisibleElements = 0
 
@@ -781,8 +790,10 @@ function Library:UpdateSearch(SearchText)
                     ElementInfo.Holder.Visible = false
                     continue
                 elseif ElementInfo.SubButton then
+                    --// Check if any of the Buttons Name matches with Search
                     local Visible = false
 
+                    --// Check if Search matches Element's Name and if Element is Visible
                     if ElementInfo.Text:lower():match(Search) and ElementInfo.Visible then
                         Visible = true
                     else
@@ -801,6 +812,7 @@ function Library:UpdateSearch(SearchText)
                     continue
                 end
 
+                --// Check if Search matches Element's Name and if Element is Visible
                 if ElementInfo.Text and ElementInfo.Text:lower():match(Search) and ElementInfo.Visible then
                     ElementInfo.Holder.Visible = true
                     VisibleElements += 1
@@ -817,6 +829,7 @@ function Library:UpdateSearch(SearchText)
                 VisibleElements += CheckDepbox(Depbox, Search)
             end
 
+            --// Update Groupbox Size and Visibility if found any element
             if VisibleElements > 0 then
                 Groupbox:Resize()
                 HasVisible = true
@@ -836,8 +849,10 @@ function Library:UpdateSearch(SearchText)
                         ElementInfo.Holder.Visible = false
                         continue
                     elseif ElementInfo.SubButton then
+                        --// Check if any of the Buttons Name matches with Search
                         local Visible = false
 
+                        --// Check if Search matches Element's Name and if Element is Visible
                         if ElementInfo.Text:lower():match(Search) and ElementInfo.Visible then
                             Visible = true
                         else
@@ -856,6 +871,7 @@ function Library:UpdateSearch(SearchText)
                         continue
                     end
 
+                    --// Check if Search matches Element's Name and if Element is Visible
                     if ElementInfo.Text and ElementInfo.Text:lower():match(Search) and ElementInfo.Visible then
                         ElementInfo.Holder.Visible = true
                         VisibleElements[SubTab] += 1
@@ -887,6 +903,7 @@ function Library:UpdateSearch(SearchText)
                 end
             end
 
+            --// Update Tabbox Visibility if any visible
             Tabbox.Holder.Visible = VisibleTabs > 0
         end
 
@@ -902,8 +919,10 @@ function Library:UpdateSearch(SearchText)
                     ElementInfo.Holder.Visible = false
                     continue
                 elseif ElementInfo.SubButton then
+                    --// Check if any of the Buttons Name matches with Search
                     local Visible = false
 
+                    --// Check if Search matches Element's Name and if Element is Visible
                     if ElementInfo.Text:lower():match(Search) and ElementInfo.Visible then
                         Visible = true
                     else
@@ -922,6 +941,7 @@ function Library:UpdateSearch(SearchText)
                     continue
                 end
 
+                --// Check if Search matches Element's Name and if Element is Visible
                 if ElementInfo.Text and ElementInfo.Text:lower():match(Search) and ElementInfo.Visible then
                     ElementInfo.Holder.Visible = true
                     VisibleElements += 1
@@ -938,6 +958,7 @@ function Library:UpdateSearch(SearchText)
                 VisibleElements += CheckDepbox(Depbox, Search)
             end
 
+            --// Update Groupbox Size and Visibility if found any element
             if VisibleElements > 0 then
                 DepGroupbox:Resize()
                 HasVisible = true
@@ -1095,6 +1116,27 @@ local FetchIcons, Icons = pcall(function()
     ) :: () -> IconModule)()
 end)
 
+function Library:GetSnowflakeIcon()
+    local SnowflakeIcon = self:GetIcon("snowflake")
+    if SnowflakeIcon then
+        return SnowflakeIcon
+    end
+    
+    local alternateNames = {"snowflake-2", "snowing", "ice", "winter"}
+    for _, name in ipairs(alternateNames) do
+        local icon = self:GetIcon(name)
+        if icon then
+            return icon
+        end
+    end
+    
+    return {
+        Url = "",
+        ImageRectOffset = Vector2.zero,
+        ImageRectSize = Vector2.zero,
+        Custom = true,
+    }
+end
 function Library:GetIcon(IconName: string)
     if not FetchIcons then
         return
@@ -1140,6 +1182,7 @@ function Library:Validate(Table: { [string]: any }, Template: { [string]: any })
     return Table
 end
 
+--// Creator Functions \\--
 local function FillInstance(Table: { [string]: any }, Instance: GuiObject)
     local ThemeProperties = Library.Registry[Instance] or {}
     local DPIProperties = Library.DPIRegistry[Instance] or {}
@@ -1153,6 +1196,7 @@ local function FillInstance(Table: { [string]: any }, Instance: GuiObject)
         elseif ThemeProperties[k] then
             ThemeProperties[k] = nil
         elseif k ~= "Text" and (Library.Scheme[v] or typeof(v) == "function") then
+            -- me when Red in dropdowns break things (temp fix - or perm idk if deivid will do something about this)
             ThemeProperties[k] = v
             Instance[k] = Library.Scheme[v] or v()
             continue
@@ -1198,6 +1242,7 @@ local function New(ClassName: string, Properties: { [string]: any }): any
     return Instance
 end
 
+--// Main Instances \\-
 local function SafeParentUI(Instance: Instance, Parent: Instance | () -> Instance)
     local success, _error = pcall(function()
         if not Parent then
@@ -1251,14 +1296,15 @@ local ModalElement = New("TextButton", {
     Parent = ScreenGui,
 })
 
+--// Cursor
 local Cursor
 do
     Cursor = New("Frame", {
         AnchorPoint = Vector2.new(0.5, 0.5),
         BackgroundColor3 = "White",
-        Size = UDim2.fromOffset(12, 1),
+        Size = UDim2.fromOffset(9, 1),
         Visible = false,
-        ZIndex = 9999,
+        ZIndex = 999,
         Parent = ScreenGui,
     })
     New("Frame", {
@@ -1266,7 +1312,7 @@ do
         BackgroundColor3 = "Dark",
         Position = UDim2.fromScale(0.5, 0.5),
         Size = UDim2.new(1, 2, 1, 2),
-        ZIndex = 9998,
+        ZIndex = 998,
         Parent = Cursor,
     })
 
@@ -1274,7 +1320,7 @@ do
         AnchorPoint = Vector2.new(0.5, 0.5),
         BackgroundColor3 = "White",
         Position = UDim2.fromScale(0.5, 0.5),
-        Size = UDim2.fromOffset(1, 12),
+        Size = UDim2.fromOffset(1, 9),
         Parent = Cursor,
     })
     New("Frame", {
@@ -1282,11 +1328,12 @@ do
         BackgroundColor3 = "Dark",
         Position = UDim2.fromScale(0.5, 0.5),
         Size = UDim2.new(1, 2, 1, 2),
-        ZIndex = 9998,
+        ZIndex = 998,
         Parent = CursorV,
     })
 end
 
+--// Notification
 local NotificationArea
 local NotificationList
 do
@@ -1304,6 +1351,7 @@ do
     })
 end
 
+--// Lib Functions \\--
 function Library:GetBetterColor(Color: Color3, Add: number): Color3
     Add = Add * (Library.IsLightTheme and -4 or 2)
     return Color3.fromRGB(
@@ -1630,6 +1678,7 @@ function Library:AddDraggableMenu(Name: string)
     return Background, Container
 end
 
+--// Watermark \\--
 do
     local WatermarkBackground = Library:MakeOutline(ScreenGui, Library.CornerRadius, 10)
     WatermarkBackground.AutomaticSize = Enum.AutomaticSize.Y
@@ -1692,6 +1741,7 @@ do
     end
 end
 
+--// Context Menu \\--
 local CurrentMenu
 function Library:AddContextMenu(
     Holder: GuiObject,
@@ -1854,6 +1904,7 @@ Library:GiveSignal(UserInputService.InputBegan:Connect(function(Input: InputObje
     end
 end))
 
+--// Tooltip \\--
 local TooltipLabel = New("TextLabel", {
     BackgroundColor3 = "BackgroundColor",
     BorderColor3 = "OutlineColor",
@@ -2001,6 +2052,7 @@ function Library:SetIconModule(module: IconModule)
     FetchIcons = true
     Icons = module
 
+    -- Top ten fixes 🚀
     CheckIcon = Library:GetIcon("check")
     ArrowIcon = Library:GetIcon("chevron-up")
     ResizeIcon = Library:GetIcon("move-diagonal-2")
@@ -2020,9 +2072,9 @@ do
 
         local KeyPicker = {
             Text = Info.Text,
-            Value = Info.Default,
-            Modifiers = Info.DefaultModifiers,
-            DisplayValue = Info.Default,
+            Value = Info.Default, -- Key
+            Modifiers = Info.DefaultModifiers, -- Modifiers
+            DisplayValue = Info.Default, -- Picker Text
 
             Toggled = false,
             Mode = Info.Mode,
@@ -2051,6 +2103,7 @@ do
 
         local Picking = false
 
+        -- Special Keys
         local SpecialKeys = {
             ["MB1"] = Enum.UserInputType.MouseButton1,
             ["MB2"] = Enum.UserInputType.MouseButton2,
@@ -2063,6 +2116,7 @@ do
             [Enum.UserInputType.MouseButton3] = "MB3",
         }
 
+        -- Modifiers
         local Modifiers = {
             ["LAlt"] = Enum.KeyCode.LeftAlt,
             ["RAlt"] = Enum.KeyCode.RightAlt,
@@ -2175,7 +2229,7 @@ do
             return ValidModifiers
         end
 
-        KeyPicker.Modifiers = VerifyModifiers(KeyPicker.Modifiers)
+        KeyPicker.Modifiers = VerifyModifiers(KeyPicker.Modifiers) -- Verify default modifiers
 
         local Picker = New("TextButton", {
             BackgroundColor3 = "MainColor",
@@ -2259,7 +2313,7 @@ do
                 Checkbox.Visible = not Normal
             end
 
-            KeyPicker.DoClick = function(...) end
+            KeyPicker.DoClick = function(...) end --// make luau lsp shut up
             Holder.MouseButton1Click:Connect(function()
                 if KeybindsToggle.Normal then
                     return
@@ -2480,6 +2534,7 @@ do
             Picker.Text = "..."
             Picker.Size = UDim2.fromOffset(29 * Library.DPIScale, 18 * Library.DPIScale)
 
+            -- Wait for an non modifier key --
             local Input
             local ActiveModifiers = {}
 
@@ -2493,6 +2548,7 @@ do
             repeat
                 task.wait()
 
+                -- Wait for any input --
                 Picker.Text = "..."
                 Picker.Size = UDim2.fromOffset(29 * Library.DPIScale, 18 * Library.DPIScale)
 
@@ -2502,10 +2558,12 @@ do
                     return
                 end
 
+                -- Escape --
                 if Input.KeyCode == Enum.KeyCode.Escape then
                     break
                 end
 
+                -- Handle modifier keys --
                 if IsModifierInput(Input) then
                     local StopLoop = false
 
@@ -2515,26 +2573,30 @@ do
                             task.wait(0.075)
 
                             if UserInputService:IsKeyDown(Input.KeyCode) then
+                                -- Add modifier to the key list --
                                 if not table.find(ActiveModifiers, ModifiersInput[Input.KeyCode]) then
                                     ActiveModifiers[#ActiveModifiers + 1] = ModifiersInput[Input.KeyCode]
                                     KeyPicker:Display(table.concat(ActiveModifiers, " + ") .. " + ...")
                                 end
 
+                                -- Wait for another input --
                                 if GetInput() then
                                     StopLoop = true
-                                    break
+                                    break -- Invalid Input
                                 end
 
+                                -- Escape --
                                 if Input.KeyCode == Enum.KeyCode.Escape then
                                     break
                                 end
 
+                                -- Stop loop if its a normal key --
                                 if not IsModifierInput(Input) then
                                     break
                                 end
                             else
                                 if not table.find(ActiveModifiers, ModifiersInput[Input.KeyCode]) then
-                                    break
+                                    break -- Modifier is meant to be used as a normal key --
                                 end
                             end
                         end
@@ -2547,7 +2609,7 @@ do
                     end
                 end
 
-                break
+                break -- Input found, end loop
             until false
 
             local Key = "Unknown"
@@ -2562,6 +2624,7 @@ do
             KeyPicker.Toggled = false
             KeyPicker:SetValue({ Key, KeyPicker.Mode, ActiveModifiers })
 
+            -- RunService.RenderStepped:Wait()
             repeat
                 task.wait()
             until not IsInputDown(Input) or UserInputService:GetFocusedTextBox()
@@ -2685,6 +2748,7 @@ do
             Parent = Holder,
         })
 
+        --// Color Menu \\--
         local ColorMenu = Library:AddContextMenu(
             Holder,
             UDim2.fromOffset(Info.Transparency and 256 or 234, 0),
@@ -2726,6 +2790,7 @@ do
             Parent = ColorHolder,
         })
 
+        --// Sat Map
         local SatVipMap = New("ImageButton", {
             BackgroundColor3 = ColorPicker.Value,
             Image = CustomImageManager.GetAsset("SaturationMap"),
@@ -2748,6 +2813,7 @@ do
             Parent = SatVibCursor,
         })
 
+        --// Hue
         local HueSelector = New("TextButton", {
             Size = UDim2.fromOffset(16, 200),
             Text = "",
@@ -2769,6 +2835,7 @@ do
             Parent = HueSelector,
         })
 
+        --// Alpha
         local TransparencySelector, TransparencyColor, TransparencyCursor
         if Info.Transparency then
             TransparencySelector = New("ImageButton", {
@@ -2838,6 +2905,7 @@ do
             Parent = InfoHolder,
         })
 
+        --// Context Menu \\--
         local ContextMenu = Library:AddContextMenu(Holder, UDim2.fromOffset(93, 0), function()
             return { Holder.AbsoluteSize.X + 1.5, 0.5 }
         end, 1)
@@ -2862,7 +2930,7 @@ do
                 Library.CopiedColor = { ColorPicker.Value, ColorPicker.Transparency }
             end)
 
-            ColorPicker.SetValueRGB = function(...) end
+            ColorPicker.SetValueRGB = function(...) end --// make luau lsp shut up
             CreateButton("Paste color", function()
                 ColorPicker:SetValueRGB(Library.CopiedColor[1], Library.CopiedColor[2])
             end)
@@ -2880,6 +2948,8 @@ do
                 end)
             end
         end
+
+        --// End \\--
 
         function ColorPicker:SetHSVFromRGB(Color)
             ColorPicker.Hue, ColorPicker.Sat, ColorPicker.Vib = Color:ToHSV()
@@ -3325,7 +3395,7 @@ do
                         Library:SafeCallback(Button.Func)
                     end
 
-                    RunService.RenderStepped:Wait()
+                    RunService.RenderStepped:Wait() --// Mouse Button fires without waiting (i hate roblox)
                     Button.Locked = false
                     return
                 end
@@ -4211,7 +4281,7 @@ do
         function Slider:SetMax(Value)
             assert(Value > Slider.Min, "Max value cannot be less than the current min value.")
     
-            Slider:SetValue(math.clamp(Slider.Value, Slider.Min, Value))
+            Slider:SetValue(math.clamp(Slider.Value, Slider.Min, Value)) --this will make  so it updates. and im calling this so i dont need to add an if :P
             Slider.Max = Value
             Slider:Display()
         end
@@ -4219,7 +4289,7 @@ do
         function Slider:SetMin(Value)
             assert(Value < Slider.Max, "Min value cannot be greater than the current max value.")
     
-            Slider:SetValue(math.clamp(Slider.Value, Value, Slider.Max))
+            Slider:SetValue(math.clamp(Slider.Value, Value, Slider.Max)) --same here. adding these comments for the funny
             Slider.Min = Value
             Slider:Display()
         end
@@ -5890,6 +5960,233 @@ function Library:Notify(...)
     return Data
 end
 
+function Library:AddSnowEffect(Parent: GuiObject, SnowCount: number?, SnowSize: number?, Speed: number?, Color: Color3?)
+    SnowCount = SnowCount or 40 
+    SnowSize = SnowSize or 16
+    Speed = Speed or 0.6
+    Color = Color or Color3.fromRGB(240, 248, 255)
+
+    local Snowflakes = {}
+    
+    local SnowContainer = New("Frame", {
+        BackgroundTransparency = 1,
+        Size = UDim2.fromScale(1, 1),
+        ZIndex = 1,
+        ClipsDescendants = true,
+        Parent = Parent,
+    })
+    
+    if Parent:FindFirstChild("UICorner") then
+        local parentCorner = Parent.UICorner
+        New("UICorner", {
+            CornerRadius = parentCorner.CornerRadius,
+            Parent = SnowContainer,
+        })
+    end
+    
+    local ClipFrame = New("Frame", {
+        BackgroundTransparency = 1,
+        Size = UDim2.fromScale(1, 1),
+        ClipsDescendants = true,
+        Parent = SnowContainer,
+    })
+
+    local SnowflakeIcon = Library:GetSnowflakeIcon()
+    local HasSnowflakeIcon = SnowflakeIcon and SnowflakeIcon.Url ~= ""
+    
+    local function updateContainerBounds()
+        return {
+            X = SnowContainer.AbsolutePosition.X,
+            Y = SnowContainer.AbsolutePosition.Y,
+            Width = SnowContainer.AbsoluteSize.X,
+            Height = SnowContainer.AbsoluteSize.Y
+        }
+    end
+    
+    local containerBounds = updateContainerBounds()
+
+    for i = 1, SnowCount do
+        local Snowflake
+        
+        local startX = math.random()
+        local startY = -0.05 * math.random()
+        local pixelX = startX * containerBounds.Width
+        local pixelY = startY * containerBounds.Height
+        
+        if HasSnowflakeIcon then
+            Snowflake = New("ImageLabel", {
+                Image = SnowflakeIcon.Url,
+                ImageColor3 = Color,
+                ImageRectOffset = SnowflakeIcon.ImageRectOffset,
+                ImageRectSize = SnowflakeIcon.ImageRectSize,
+                ImageTransparency = 0.2 + math.random() * 0.4,
+                BackgroundTransparency = 1,
+                Size = UDim2.fromOffset(SnowSize, SnowSize),
+                Rotation = math.random(0, 360),
+                Position = UDim2.new(0, pixelX, 0, pixelY),
+                AnchorPoint = Vector2.new(0.5, 0.5),
+                ZIndex = 2,
+                Parent = ClipFrame,
+            })
+        else
+            Snowflake = New("Frame", {
+                BackgroundColor3 = Color,
+                BackgroundTransparency = 0.3,
+                Size = UDim2.fromOffset(SnowSize/2, SnowSize/2),
+                Rotation = 45,
+                Position = UDim2.new(0, pixelX, 0, pixelY),
+                AnchorPoint = Vector2.new(0.5, 0.5),
+                ZIndex = 2,
+                Parent = ClipFrame,
+            })
+            New("UICorner", {
+                CornerRadius = UDim.new(0, 2),
+                Parent = Snowflake,
+            })
+        end
+        
+        local Data = {
+            X = startX,
+            Y = startY,
+            Speed = Speed * (0.4 + math.random() * 0.6),
+            Drift = (math.random() - 0.5) * 0.02,
+            Size = SnowSize,
+            RotationSpeed = (math.random() - 0.5) * 60,
+            Transparency = 0.2 + math.random() * 0.4,
+            WobblePhase = math.random() * math.pi * 2,
+            WobbleAmount = math.random() * 0.01,
+            Scale = 0.8 + math.random() * 0.4,
+            HalfSize = SnowSize / 2,
+        }
+
+        if HasSnowflakeIcon then
+            local Glow = New("ImageLabel", {
+                Image = SnowflakeIcon.Url,
+                ImageColor3 = Color3.fromRGB(200, 230, 255),
+                ImageRectOffset = SnowflakeIcon.ImageRectOffset,
+                ImageRectSize = SnowflakeIcon.ImageRectSize,
+                ImageTransparency = Data.Transparency + 0.3,
+                BackgroundTransparency = 1,
+                Size = UDim2.new(1.3, 0, 1.3, 0),
+                Position = UDim2.fromScale(0.5, 0.5),
+                AnchorPoint = Vector2.new(0.5, 0.5),
+                ZIndex = 1,
+                Parent = Snowflake,
+            })
+        end
+
+        table.insert(Snowflakes, { Instance = Snowflake, Data = Data })
+    end
+
+    local Connection = RunService.RenderStepped:Connect(function(delta)
+        if not SnowContainer.Parent or not Parent then
+            Connection:Disconnect()
+            return
+        end
+
+        containerBounds = updateContainerBounds()
+        local currentTime = tick()
+
+        for _, Snow in ipairs(Snowflakes) do
+            local Data = Snow.Data
+            local Instance = Snow.Instance
+
+            Data.Y = Data.Y + Data.Speed * delta * 0.5
+            Data.X = Data.X + Data.Drift * delta
+            
+            local wobbleX = math.sin(currentTime * 1.5 + Data.WobblePhase) * Data.WobbleAmount
+            Data.X = Data.X + wobbleX * delta
+            
+            Data.X = math.clamp(Data.X, 0, 1)
+            
+            Instance.Rotation = Instance.Rotation + Data.RotationSpeed * delta
+            
+            local pulse = 0.9 + 0.1 * math.sin(currentTime * 2 + Data.Y * 10)
+            local actualSize = Data.Size * Data.Scale * pulse
+            Instance.Size = UDim2.fromOffset(actualSize, actualSize)
+            
+            local depthTransparency = math.min(Data.Y * 0.3, 0.4)
+            local targetTransparency = math.min(Data.Transparency + depthTransparency, 0.9)
+            
+            if Instance:IsA("ImageLabel") then
+                Instance.ImageTransparency = targetTransparency
+            else
+                Instance.BackgroundTransparency = targetTransparency
+            end
+
+        
+            if Data.Y > 1 then  -- 到达105%的位置时重置
+                Data.Y = -0.05 * math.random()
+                Data.X = math.random()
+                Data.Transparency = 0.2 + math.random() * 0.4
+                Instance.Rotation = math.random(0, 360)
+                
+                Data.Speed = Speed * (0.4 + math.random() * 0.6)
+                Data.Drift = (math.random() - 0.5) * 0.02
+                Data.RotationSpeed = (math.random() - 0.5) * 60
+                Data.WobblePhase = math.random() * math.pi * 2
+                Data.Scale = 0.8 + math.random() * 0.4
+            end
+
+            local pixelX = Data.X * containerBounds.Width
+            local pixelY = Data.Y * containerBounds.Height
+            Instance.Position = UDim2.new(0, pixelX, 0, pixelY)
+        end
+    end)
+    
+    local ResizeConnection = Parent:GetPropertyChangedSignal("AbsoluteSize"):Connect(function()
+        containerBounds = updateContainerBounds()
+        SnowContainer.Size = UDim2.fromScale(1, 1)
+        ClipFrame.Size = UDim2.fromScale(1, 1)
+    end)
+    
+    local PositionConnection = Parent:GetPropertyChangedSignal("AbsolutePosition"):Connect(function()
+        containerBounds = updateContainerBounds()
+    end)
+    
+    local CornerConnection
+    if Parent:FindFirstChild("UICorner") then
+        local parentCorner = Parent.UICorner
+        local snowCorner = SnowContainer:FindFirstChild("UICorner")
+        if snowCorner then
+            CornerConnection = parentCorner:GetPropertyChangedSignal("CornerRadius"):Connect(function()
+                snowCorner.CornerRadius = parentCorner.CornerRadius
+            end)
+        end
+    end
+
+    table.insert(Library.Signals, Connection)
+    table.insert(Library.Signals, ResizeConnection)
+    table.insert(Library.Signals, PositionConnection)
+    if CornerConnection then
+        table.insert(Library.Signals, CornerConnection)
+    end
+
+    return {
+        Destroy = function()
+            Connection:Disconnect()
+            if ResizeConnection then ResizeConnection:Disconnect() end
+            if PositionConnection then PositionConnection:Disconnect() end
+            if CornerConnection then CornerConnection:Disconnect() end
+            SnowContainer:Destroy()
+        end,
+        SetVisible = function(visible)
+            SnowContainer.Visible = visible
+        end,
+        SetIntensity = function(intensity)
+            for _, Snow in ipairs(Snowflakes) do
+                Snow.Data.Transparency = 0.2 + (1 - intensity) * 0.6
+            end
+        end,
+        SetSpeed = function(newSpeed)
+            Speed = newSpeed
+            for _, Snow in ipairs(Snowflakes) do
+                Snow.Data.Speed = Speed * (0.4 + math.random() * 0.6)
+            end
+        end,
+        Container = SnowContainer
+    }
+end
 function Library:CreateWindow(WindowInfo)
     WindowInfo = Library:Validate(WindowInfo, Templates.Window)
     local ViewportSize: Vector2 = workspace.CurrentCamera.ViewportSize
@@ -6164,16 +6461,6 @@ function Library:CreateWindow(WindowInfo)
             ZIndex = 2,
         })
 
-        New("UIGradient", {
-            Color = ColorSequence.new({
-                ColorSequenceKeypoint.new(0, Library.Scheme.AccentColor),
-                ColorSequenceKeypoint.new(0.5, Color3.fromRGB(80, 150, 255)),
-                ColorSequenceKeypoint.new(1, Library.Scheme.AccentColor)
-            }),
-            Rotation = 90,
-            Parent = MainFrame,
-        })
-
         local Lines = {
             {
                 Position = UDim2.fromOffset(0, 48),
@@ -6207,6 +6494,7 @@ function Library:CreateWindow(WindowInfo)
             MainFrame.Position = UDim2.new(0.5, -MainFrame.Size.X.Offset / 2, 0.5, -MainFrame.Size.Y.Offset / 2)
         end
 
+        --// Top Bar \\-
         local TopBar = New("Frame", {
             BackgroundTransparency = 1,
             Size = UDim2.new(1, 0, 0, 48),
@@ -6214,6 +6502,7 @@ function Library:CreateWindow(WindowInfo)
         })
         Library:MakeDraggable(MainFrame, TopBar, false, true)
 
+        --// Title
         local TitleHolder = New("Frame", {
             BackgroundTransparency = 1,
             Size = UDim2.new(0, math.max(LayoutState.CompactWidth, InitialSidebarWidth), 1, 0),
@@ -6268,6 +6557,7 @@ function Library:CreateWindow(WindowInfo)
 
         LayoutRefs.WindowTitle = WindowTitle
 
+        --// Top Right Bar
         local RightWrapper = New("Frame", {
             BackgroundTransparency = 1,
             AnchorPoint = Vector2.new(0, 0.5),
@@ -6390,6 +6680,7 @@ function Library:CreateWindow(WindowInfo)
             })
         end
 
+        --// Bottom Bar \\--
         local BottomBar = New("Frame", {
             AnchorPoint = Vector2.new(0, 1),
             BackgroundColor3 = function()
@@ -6412,6 +6703,7 @@ function Library:CreateWindow(WindowInfo)
             Parent = BottomBar,
         })
 
+        --// Footer
         New("TextLabel", {
             BackgroundTransparency = 1,
             Size = UDim2.fromScale(1, 1),
@@ -6421,6 +6713,7 @@ function Library:CreateWindow(WindowInfo)
             Parent = BottomBar,
         })
 
+        --// Resize Button
         if WindowInfo.Resizable then
             ResizeButton = New("TextButton", {
                 AnchorPoint = Vector2.new(1, 0),
@@ -6457,6 +6750,7 @@ function Library:CreateWindow(WindowInfo)
             ApplySidebarLayout()
         end)
 
+        --// Tabs \\--
         Tabs = New("ScrollingFrame", {
             AutomaticCanvasSize = Enum.AutomaticSize.Y,
             BackgroundColor3 = "BackgroundColor",
@@ -6470,7 +6764,11 @@ function Library:CreateWindow(WindowInfo)
             Parent = Tabs,
         })
         LayoutRefs.TabsFrame = Tabs
-
+        
+        
+        
+        
+              --// Player Info Frame \\--
         local PlayerInfoFrame = New("Frame", {
             BackgroundTransparency = 0,
             BackgroundColor3 = "BackgroundColor",
@@ -6552,18 +6850,17 @@ function Library:CreateWindow(WindowInfo)
             Parent = PlayerInfoFrame,
         })
 
-        local AXUserLabel = New("TextLabel", {
-            BackgroundTransparency = 1,
-            Size = UDim2.new(0, 80, 0, 12),
-            Position = UDim2.fromOffset(50, 14),
-            Text = "江砚辰",
-            TextSize = 10,
-            TextColor3 = Color3.fromRGB(200, 200, 200),
-            TextXAlignment = Enum.TextXAlignment.Left,
-            ZIndex = 3,
-            Visible = true,
-            Parent = PlayerInfoFrame,
-        })
+        local AXUserImage = New("ImageLabel", {
+    BackgroundTransparency = 1,
+    Size = UDim2.fromOffset(80, 12),
+    Position = UDim2.fromOffset(50, 14),
+    Image = "rbxassetid://96376095025760",
+    ImageColor3 = Color3.fromRGB(255, 255, 255),
+    ImageTransparency = 0,
+    ZIndex = 3,
+    Visible = true,
+    Parent = PlayerInfoFrame,
+})
 
         local isInfoHidden = true
 
@@ -6598,6 +6895,12 @@ function Library:CreateWindow(WindowInfo)
         local marginBottom = 40
         Tabs.CanvasSize = UDim2.new(0, 0, 0, Tabs.UIListLayout.AbsoluteContentSize.Y + marginBottom)
 
+        
+        
+        
+        
+
+        --// Container \\--
         Container = New("Frame", {
             AnchorPoint = Vector2.new(0, 0),
             BackgroundColor3 = function()
@@ -6728,6 +7031,7 @@ function Library:CreateWindow(WindowInfo)
         end)
     end
 
+    --// Window Table \\--
     Window = {}
 
     function Window:GetSidebarWidth()
@@ -6833,6 +7137,7 @@ function Library:CreateWindow(WindowInfo)
                 })
             end
 
+            --// Tab Container \\--
             TabContainer = New("Frame", {
                 BackgroundTransparency = 1,
                 Size = UDim2.fromScale(1, 1),
@@ -6897,93 +7202,95 @@ function Library:CreateWindow(WindowInfo)
             end
 		end
 
-        local WarningBoxHolder = New("Frame", {
-            AutomaticSize = Enum.AutomaticSize.Y,
-            BackgroundTransparency = 1,
-            Position = UDim2.fromOffset(2, 6),
-            Size = UDim2.fromScale(1, 0),
-            Visible = false,
-            Parent = TabContainer
-        })
+        --// Warning Box \\--
+		local WarningBoxHolder = New("Frame", {
+		    AutomaticSize = Enum.AutomaticSize.Y,
+		    BackgroundTransparency = 1,
+		    Position = UDim2.fromOffset(2, 6),
+		    Size = UDim2.fromScale(1, 0),
+		    Visible = false,
+		    Parent = TabContainer
+		})
 
-        local WarningBoxBackground, WarningBoxOutline = Library:MakeOutline(WarningBoxHolder, WindowInfo.CornerRadius)
-        WarningBoxBackground.Size = UDim2.fromScale(1, 0)
-        Library:UpdateDPI(WarningBoxBackground, {
-            Size = false,
-        })
+		local WarningBoxBackground, WarningBoxOutline = Library:MakeOutline(WarningBoxHolder, WindowInfo.CornerRadius)
+		WarningBoxBackground.Size = UDim2.fromScale(1, 0)
+		Library:UpdateDPI(WarningBoxBackground, {
+		    Size = false,
+		})
 
-        local WarningBox
-        local WarningBoxScrollingFrame
-        local WarningTitle
-        local WarningStroke
-        local WarningText
-        do
-            WarningBox = New("Frame", {
-                BackgroundColor3 = "BackgroundColor",
-                Position = UDim2.fromOffset(2, 2),
-                Size = UDim2.new(1, -4, 0, 100),
-                Parent = WarningBoxBackground,
-            })
-            New("UICorner", {
-                CornerRadius = UDim.new(0, WindowInfo.CornerRadius - 1),
-                Parent = WarningBox,
-            })
-            
-            WarningBoxScrollingFrame = New("ScrollingFrame", {
-                BackgroundTransparency = 1,
-                BorderSizePixel = 0,
-                Size = UDim2.fromScale(1, 1),
-                CanvasSize = UDim2.new(0, 0, 0, 0),
-                ScrollBarThickness = 3,
-                ScrollingDirection = Enum.ScrollingDirection.Y,
-                Parent = WarningBox,
-            })
-            
-            New("UIPadding", {
-                PaddingBottom = UDim.new(0, 4),
-                PaddingLeft = UDim.new(0, 6),
-                PaddingRight = UDim.new(0, 6),
-                PaddingTop = UDim.new(0, 4),
-                Parent = WarningBoxScrollingFrame,
-            })
-            
-            WarningTitle = New("TextLabel", {
-                BackgroundTransparency = 1,
-                Size = UDim2.new(1, -4, 0, 14),
-                Text = "",
-                TextColor3 = Color3.fromRGB(255, 50, 50),
-                TextSize = 14,
-                TextXAlignment = Enum.TextXAlignment.Left,
-                Parent = WarningBoxScrollingFrame,
-            })
-            
-            WarningStroke = New("UIStroke", {
-                ApplyStrokeMode = Enum.ApplyStrokeMode.Contextual,
-                Color = Color3.fromRGB(169, 0, 0),
-                LineJoinMode = Enum.LineJoinMode.Miter,
-                Parent = WarningTitle,
-            })
-            
-            WarningText = New("TextLabel", {
-                BackgroundTransparency = 1,
-                Position = UDim2.fromOffset(0, 16),
-                Size = UDim2.new(1, -4, 0, 0),
-                Text = "",
-                TextSize = 14,
-                TextWrapped = true,
-                Parent = WarningBoxScrollingFrame,
-                TextXAlignment = Enum.TextXAlignment.Left,
-                TextYAlignment = Enum.TextYAlignment.Top,
-            })
-            
-            New("UIStroke", {
-                ApplyStrokeMode = Enum.ApplyStrokeMode.Contextual,
-                Color = "Dark",
-                LineJoinMode = Enum.LineJoinMode.Miter,
-                Parent = WarningText,
-            })
-        end
+		local WarningBox
+		local WarningBoxScrollingFrame
+		local WarningTitle
+		local WarningStroke
+		local WarningText
+		do
+		    WarningBox = New("Frame", {
+		        BackgroundColor3 = "BackgroundColor",
+		        Position = UDim2.fromOffset(2, 2),
+		        Size = UDim2.new(1, -4, 0, 100),
+		        Parent = WarningBoxBackground,
+		    })
+		    New("UICorner", {
+		        CornerRadius = UDim.new(0, WindowInfo.CornerRadius - 1),
+		        Parent = WarningBox,
+		    })
+		    
+		    WarningBoxScrollingFrame = New("ScrollingFrame", {
+		        BackgroundTransparency = 1,
+		        BorderSizePixel = 0,
+		        Size = UDim2.fromScale(1, 1),
+		        CanvasSize = UDim2.new(0, 0, 0, 0),
+		        ScrollBarThickness = 3,
+		        ScrollingDirection = Enum.ScrollingDirection.Y,
+		        Parent = WarningBox,
+		    })
+		    
+		    New("UIPadding", {
+		        PaddingBottom = UDim.new(0, 4),
+		        PaddingLeft = UDim.new(0, 6),
+		        PaddingRight = UDim.new(0, 6),
+		        PaddingTop = UDim.new(0, 4),
+		        Parent = WarningBoxScrollingFrame,
+		    })
+		    
+		    WarningTitle = New("TextLabel", {
+		        BackgroundTransparency = 1,
+		        Size = UDim2.new(1, -4, 0, 14),
+		        Text = "",
+		        TextColor3 = Color3.fromRGB(255, 50, 50),
+		        TextSize = 14,
+		        TextXAlignment = Enum.TextXAlignment.Left,
+		        Parent = WarningBoxScrollingFrame,
+		    })
+		    
+		    WarningStroke = New("UIStroke", {
+		        ApplyStrokeMode = Enum.ApplyStrokeMode.Contextual,
+		        Color = Color3.fromRGB(169, 0, 0),
+		        LineJoinMode = Enum.LineJoinMode.Miter,
+		        Parent = WarningTitle,
+		    })
+		    
+		    WarningText = New("TextLabel", {
+		        BackgroundTransparency = 1,
+		        Position = UDim2.fromOffset(0, 16),
+		        Size = UDim2.new(1, -4, 0, 0),
+		        Text = "",
+		        TextSize = 14,
+		        TextWrapped = true,
+		        Parent = WarningBoxScrollingFrame,
+		        TextXAlignment = Enum.TextXAlignment.Left,
+		        TextYAlignment = Enum.TextYAlignment.Top,
+		    })
+		    
+		    New("UIStroke", {
+		        ApplyStrokeMode = Enum.ApplyStrokeMode.Contextual,
+		        Color = "Dark",
+		        LineJoinMode = Enum.LineJoinMode.Miter,
+		        Parent = WarningText,
+		    })
+		end
 
+        --// Tab Table \\--
         local Tab = {
             Groupboxes = {},
             Tabboxes = {},
@@ -7002,118 +7309,118 @@ function Library:CreateWindow(WindowInfo)
         }
 
         function Tab:UpdateWarningBox(Info)
-            if typeof(Info.IsNormal) == "boolean" then
-                Tab.WarningBox.IsNormal = Info.IsNormal
-            end
-            if typeof(Info.LockSize) == "boolean" then
-                Tab.WarningBox.LockSize = Info.LockSize
-            end
-            if typeof(Info.Visible) == "boolean" then
-                Tab.WarningBox.Visible = Info.Visible
-            end
-            if typeof(Info.Title) == "string" then
-                Tab.WarningBox.Title = Info.Title
-            end
-            if typeof(Info.Text) == "string" then
-                Tab.WarningBox.Text = Info.Text
-            end
+		    if typeof(Info.IsNormal) == "boolean" then
+		        Tab.WarningBox.IsNormal = Info.IsNormal
+		    end
+		    if typeof(Info.LockSize) == "boolean" then
+		        Tab.WarningBox.LockSize = Info.LockSize
+		    end
+		    if typeof(Info.Visible) == "boolean" then
+		        Tab.WarningBox.Visible = Info.Visible
+		    end
+		    if typeof(Info.Title) == "string" then
+		        Tab.WarningBox.Title = Info.Title
+		    end
+		    if typeof(Info.Text) == "string" then
+		        Tab.WarningBox.Text = Info.Text
+		    end
 
-            WarningBoxHolder.Visible = Tab.WarningBox.Visible
-            WarningTitle.Text = Tab.WarningBox.Title
-            WarningText.Text = Tab.WarningBox.Text
-            Tab:Resize(true)
+		    WarningBoxHolder.Visible = Tab.WarningBox.Visible
+		    WarningTitle.Text = Tab.WarningBox.Title
+		    WarningText.Text = Tab.WarningBox.Text
+		    Tab:Resize(true)
 
-            WarningBox.BackgroundColor3 = Tab.WarningBox.IsNormal == true and Library.Scheme.BackgroundColor
-                or Color3.fromRGB(127, 0, 0)
+		    WarningBox.BackgroundColor3 = Tab.WarningBox.IsNormal == true and Library.Scheme.BackgroundColor
+		        or Color3.fromRGB(127, 0, 0)
 
-            WarningBoxBackground.BackgroundColor3 = Tab.WarningBox.IsNormal == true and Library.Scheme.Dark
-                or Color3.fromRGB(169, 0, 0)
-            WarningBoxOutline.BackgroundColor3 = Tab.WarningBox.IsNormal == true and Library.Scheme.OutlineColor
-                or Color3.fromRGB(255, 50, 50)
-            
-            WarningTitle.TextColor3 = Tab.WarningBox.IsNormal == true and Library.Scheme.FontColor
-                or Color3.fromRGB(255, 50, 50)
-            WarningStroke.Color = Tab.WarningBox.IsNormal == true and Library.Scheme.OutlineColor
-                or Color3.fromRGB(169, 0, 0)
+		    WarningBoxBackground.BackgroundColor3 = Tab.WarningBox.IsNormal == true and Library.Scheme.Dark
+		        or Color3.fromRGB(169, 0, 0)
+	        WarningBoxOutline.BackgroundColor3 = Tab.WarningBox.IsNormal == true and Library.Scheme.OutlineColor
+	            or Color3.fromRGB(255, 50, 50)
+		    
+		    WarningTitle.TextColor3 = Tab.WarningBox.IsNormal == true and Library.Scheme.FontColor
+		        or Color3.fromRGB(255, 50, 50)
+		    WarningStroke.Color = Tab.WarningBox.IsNormal == true and Library.Scheme.OutlineColor
+		        or Color3.fromRGB(169, 0, 0)
 
-            if not Library.Registry[WarningBox] then
-                Library:AddToRegistry(WarningBox, {})
-            end
-            if not Library.Registry[WarningBoxBackground] then
-                Library:AddToRegistry(WarningBoxBackground, {})
-            end
-            if not Library.Registry[WarningBoxOutline] then
-                Library:AddToRegistry(WarningBoxOutline, {})
-            end
-            if not Library.Registry[WarningTitle] then
-                Library:AddToRegistry(WarningTitle, {})
-            end
-            if not Library.Registry[WarningStroke] then
-                Library:AddToRegistry(WarningStroke, {})
-            end
+		    if not Library.Registry[WarningBox] then
+		        Library:AddToRegistry(WarningBox, {})
+		    end
+		    if not Library.Registry[WarningBoxBackground] then
+		        Library:AddToRegistry(WarningBoxBackground, {})
+		    end
+		    if not Library.Registry[WarningBoxOutline] then
+		        Library:AddToRegistry(WarningBoxOutline, {})
+		    end
+		    if not Library.Registry[WarningTitle] then
+		        Library:AddToRegistry(WarningTitle, {})
+		    end
+		    if not Library.Registry[WarningStroke] then
+		        Library:AddToRegistry(WarningStroke, {})
+		    end
 
-            Library.Registry[WarningBox].BackgroundColor3 = function()
-                return Tab.WarningBox.IsNormal == true and Library.Scheme.BackgroundColor or Color3.fromRGB(127, 0, 0)
-            end
+		    Library.Registry[WarningBox].BackgroundColor3 = function()
+		        return Tab.WarningBox.IsNormal == true and Library.Scheme.BackgroundColor or Color3.fromRGB(127, 0, 0)
+		    end
 
-            Library.Registry[WarningBoxBackground].BackgroundColor3 = function()
-                return Tab.WarningBox.IsNormal == true and Library.Scheme.Dark or Color3.fromRGB(169, 0, 0)
-            end
-            
-            Library.Registry[WarningBoxOutline].BackgroundColor3 = function()
-                return Tab.WarningBox.IsNormal == true and Library.Scheme.OutlineColor or Color3.fromRGB(255, 50, 50)
-            end
+		    Library.Registry[WarningBoxBackground].BackgroundColor3 = function()
+		        return Tab.WarningBox.IsNormal == true and Library.Scheme.Dark or Color3.fromRGB(169, 0, 0)
+		    end
+		    
+	        Library.Registry[WarningBoxOutline].BackgroundColor3 = function()
+	            return Tab.WarningBox.IsNormal == true and Library.Scheme.OutlineColor or Color3.fromRGB(255, 50, 50)
+	        end
 
-            Library.Registry[WarningTitle].TextColor3 = function()
-                return Tab.WarningBox.IsNormal == true and Library.Scheme.FontColor or Color3.fromRGB(255, 50, 50)
-            end
+		    Library.Registry[WarningTitle].TextColor3 = function()
+		        return Tab.WarningBox.IsNormal == true and Library.Scheme.FontColor or Color3.fromRGB(255, 50, 50)
+		    end
 
-            Library.Registry[WarningStroke].Color = function()
-                return Tab.WarningBox.IsNormal == true and Library.Scheme.OutlineColor or Color3.fromRGB(169, 0, 0)
-            end
-        end
+		    Library.Registry[WarningStroke].Color = function()
+		        return Tab.WarningBox.IsNormal == true and Library.Scheme.OutlineColor or Color3.fromRGB(169, 0, 0)
+		    end
+		end
 
         function Tab:RefreshSides()
-            local Offset = WarningBoxHolder.Visible and WarningBoxBackground.AbsoluteSize.Y + 6 or 0
-            for _, Side in pairs(Tab.Sides) do
-                Side.Position = UDim2.new(Side.Position.X.Scale, 0, 0, Offset)
-                Side.Size = UDim2.new(0, math.floor(TabContainer.AbsoluteSize.X / 2) - 3, 1, -Offset)
-                Library:UpdateDPI(Side, {
-                    Position = Side.Position,
-                    Size = Side.Size,
-                })
-            end
-        end
+		    local Offset = WarningBoxHolder.Visible and WarningBoxBackground.AbsoluteSize.Y + 6 or 0
+		    for _, Side in pairs(Tab.Sides) do
+		        Side.Position = UDim2.new(Side.Position.X.Scale, 0, 0, Offset)
+		        Side.Size = UDim2.new(0, math.floor(TabContainer.AbsoluteSize.X / 2) - 3, 1, -Offset)
+		        Library:UpdateDPI(Side, {
+		            Position = Side.Position,
+		            Size = Side.Size,
+		        })
+		    end
+		end
 
         function Tab:Resize(ResizeWarningBox: boolean?)
-            if ResizeWarningBox then
-                local MaximumSize = math.floor(TabContainer.AbsoluteSize.Y / 3.25)
-                local _, YText = Library:GetTextBounds(
-                    WarningText.Text,
-                    Library.Scheme.Font,
-                    WarningText.TextSize,
-                    WarningText.AbsoluteSize.X
-                )
+		    if ResizeWarningBox then
+		        local MaximumSize = math.floor(TabContainer.AbsoluteSize.Y / 3.25)
+		        local _, YText = Library:GetTextBounds(
+		            WarningText.Text,
+		            Library.Scheme.Font,
+		            WarningText.TextSize,
+		            WarningText.AbsoluteSize.X
+		        )
 
-                local YBox = 24 + YText
-                if Tab.WarningBox.LockSize == true and YBox >= MaximumSize then
-                    WarningBoxScrollingFrame.CanvasSize = UDim2.fromOffset(0, YBox)
-                    YBox = MaximumSize
-                else
-                    WarningBoxScrollingFrame.CanvasSize = UDim2.fromOffset(0, 0)
-                end
+		        local YBox = 24 + YText
+		        if Tab.WarningBox.LockSize == true and YBox >= MaximumSize then
+		            WarningBoxScrollingFrame.CanvasSize = UDim2.fromOffset(0, YBox)
+		            YBox = MaximumSize
+		        else
+		            WarningBoxScrollingFrame.CanvasSize = UDim2.fromOffset(0, 0)
+		        end
 
-                WarningText.Size = UDim2.new(1, -4, 0, YText)
-                Library:UpdateDPI(WarningText, { Size = WarningText.Size })
+		        WarningText.Size = UDim2.new(1, -4, 0, YText)
+		        Library:UpdateDPI(WarningText, { Size = WarningText.Size })
 
-                WarningBox.Size = UDim2.new(1, -4, 0, YBox)
-                Library:UpdateDPI(WarningBox, { Size = WarningBox.Size })
+		        WarningBox.Size = UDim2.new(1, -4, 0, YBox)
+		        Library:UpdateDPI(WarningBox, { Size = WarningBox.Size })
 
-                WarningBoxBackground.Size = UDim2.new(1, 0, 0, YBox + 4 * Library.DPIScale)
-            end
+		        WarningBoxBackground.Size = UDim2.new(1, 0, 0, YBox + 4 * Library.DPIScale)
+		    end
 
-            Tab:RefreshSides()
-        end
+		    Tab:RefreshSides()
+		end
 
         function Tab:AddGroupbox(Info)
             local BoxHolder = New("Frame", {
@@ -7367,6 +7674,7 @@ function Library:CreateWindow(WindowInfo)
 
                 function Tab:Resize() task.defer(ResizeTab) end
 
+                --// Execution \\--
                 if not Tabbox.ActiveTab then
                     Tab:Show()
                 end
@@ -7473,6 +7781,7 @@ function Library:CreateWindow(WindowInfo)
             Library.ActiveTab = nil
         end
 
+        --// Execution \\--
         if not Library.ActiveTab then
             Tab:Show()
         end
@@ -7558,6 +7867,7 @@ function Library:CreateWindow(WindowInfo)
                 })
             end
 
+            --// Tab Container \\--
             TabContainer = New("ScrollingFrame", {
                 AutomaticCanvasSize = Enum.AutomaticSize.Y,
                 BackgroundTransparency = 1,
@@ -7580,6 +7890,7 @@ function Library:CreateWindow(WindowInfo)
             })
         end
 
+        --// Tab Table \\--
         local Tab = {
             Elements = {},
             IsKeyTab = true,
@@ -7720,6 +8031,7 @@ function Library:CreateWindow(WindowInfo)
             Library.ActiveTab = nil
         end
 
+        --// Execution \\--
         if not Library.ActiveTab then
             Tab:Show()
         end
@@ -7812,6 +8124,7 @@ function Library:CreateWindow(WindowInfo)
         end
     end
 
+    --// Execution \\--
     SearchBox:GetPropertyChangedSignal("Text"):Connect(function()
         Library:UpdateSearch(SearchBox.Text)
     end)
@@ -7842,7 +8155,31 @@ function Library:CreateWindow(WindowInfo)
     Library:GiveSignal(UserInputService.WindowFocusReleased:Connect(function()
         Library.IsRobloxFocused = false
     end))
-
+    
+    local BackgroundContainer = New("Frame", {
+        BackgroundTransparency = 0.3,
+        BackgroundColor3 = Library.Scheme.BackgroundColor,
+        Size = UDim2.fromScale(1, 1),
+        Position = UDim2.fromScale(0, 0),
+        Parent = MainFrame,
+        ZIndex = 0,
+    })
+    
+    local SnowEffect = Library:AddSnowEffect(BackgroundContainer, 40, 10, 0.7)
+    
+    Window.SetSnowVisible = function(visible)
+        if SnowEffect then
+            SnowEffect.SetVisible(visible)
+        end
+    end
+    
+    Window.RemoveSnowEffect = function()
+        if SnowEffect then
+            SnowEffect.Destroy()
+            SnowEffect = nil
+        end
+    end
+        
     return Window
 end
 
