@@ -6850,17 +6850,18 @@ function Library:CreateWindow(WindowInfo)
             Parent = PlayerInfoFrame,
         })
 
-        local AXUserImage = New("ImageLabel", {
-    BackgroundTransparency = 1,
-    Size = UDim2.fromOffset(80, 12),
-    Position = UDim2.fromOffset(50, 14),
-    Image = "rbxassetid://96376095025760",
-    ImageColor3 = Color3.fromRGB(255, 255, 255),
-    ImageTransparency = 0,
-    ZIndex = 3,
-    Visible = true,
-    Parent = PlayerInfoFrame,
-})
+        local AXUserLabel = New("TextLabel", {
+            BackgroundTransparency = 1,
+            Size = UDim2.new(0, 80, 0, 12),
+            Position = UDim2.fromOffset(50, 14),
+            Text = "江砚辰",
+            TextSize = 10,
+            TextColor3 = Color3.fromRGB(200, 200, 200),
+            TextXAlignment = Enum.TextXAlignment.Left,
+            ZIndex = 3,
+            Visible = true,
+            Parent = PlayerInfoFrame,
+        })
 
         local isInfoHidden = true
 
