@@ -6793,7 +6793,6 @@ function Library:CreateWindow(WindowInfo)
         local avatarUrl = "rbxassetid://0"
         pcall(function()
             avatarUrl = game.Players:GetUserThumbnailAsync(game.Players.LocalPlayer.UserId, Enum.ThumbnailType.AvatarThumbnail, Enum.ThumbnailSize.Size420x420)
-            )
         end)
 
         local AvatarFrame = New("Frame", {
