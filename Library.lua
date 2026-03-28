@@ -1684,7 +1684,11 @@ do
     WatermarkBackground.Position = UDim2.fromOffset(6, 6)
     WatermarkBackground.Size = UDim2.fromOffset(0, 0)
     WatermarkBackground.Visible = false
-    Library:UpdateDPI(WatermarkBackground, { Position = false, Size = false, })
+
+    Library:UpdateDPI(WatermarkBackground, {
+        Position = false,
+        Size = false,
+    })
 
     local Holder = New("Frame", {
         BackgroundColor3 = "BackgroundColor",
@@ -1692,7 +1696,10 @@ do
         Size = UDim2.new(1, -4, 1, -4),
         Parent = WatermarkBackground,
     })
-    New("UICorner", { CornerRadius = UDim.new(0, Library.CornerRadius - 1), Parent = Holder, })
+    New("UICorner", {
+        CornerRadius = UDim.new(0, Library.CornerRadius - 1),
+        Parent = Holder,
+    })
 
     local WatermarkLabel = New("TextLabel", {
         BackgroundTransparency = 1,
@@ -1711,112 +1718,6 @@ do
 
     Library:MakeDraggable(WatermarkBackground, WatermarkLabel, true)
 
-    -- 添加长按渐隐功能
-    local LongPressConnection = nil
-    local FadeOutTween = nil
-    local FadeInTween = nil
-    local LongPressThreshold = 0.5 -- 长按阈值（秒）
-    local IsHolding = false
-    local HoldStartTime = nil
-    
-    -- 创建渐隐动画
-    local function CreateFadeOutAnimation()
-        if FadeOutTween then FadeOutTween:Cancel() end
-        FadeOutTween = TweenService:Create(WatermarkBackground, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
-            BackgroundTransparency = 1,
-        })
-        local HolderFade = TweenService:Create(Holder, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
-            BackgroundTransparency = 1,
-        })
-        local LabelFade = TweenService:Create(WatermarkLabel, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
-            TextTransparency = 1,
-        })
-        FadeOutTween:Play()
-        HolderFade:Play()
-        LabelFade:Play()
-    end
-    
-    -- 创建渐显动画
-    local function CreateFadeInAnimation()
-        if FadeInTween then FadeInTween:Cancel() end
-        FadeInTween = TweenService:Create(WatermarkBackground, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
-            BackgroundTransparency = 0,
-        })
-        local HolderFade = TweenService:Create(Holder, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
-            BackgroundTransparency = 0,
-        })
-        local LabelFade = TweenService:Create(WatermarkLabel, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
-            TextTransparency = 0,
-        })
-        FadeInTween:Play()
-        HolderFade:Play()
-        LabelFade:Play()
-    end
-    
-    -- 重置背景透明度为完全不透明
-    local function ResetTransparency()
-        if FadeOutTween then FadeOutTween:Cancel() end
-        if FadeInTween then FadeInTween:Cancel() end
-        WatermarkBackground.BackgroundTransparency = 0
-        Holder.BackgroundTransparency = 0
-        WatermarkLabel.TextTransparency = 0
-    end
-    
-    -- 监听鼠标/触摸事件
-    local function SetupLongPressEvents(target)
-        target.InputBegan:Connect(function(input)
-            if Library.Unloaded then return end
-            -- 检测鼠标左键或触摸
-            if input.UserInputType == Enum.UserInputType.MouseButton1 or 
-               input.UserInputType == Enum.UserInputType.Touch then
-                IsHolding = true
-                HoldStartTime = tick()
-                
-                -- 设置长按检测
-                if LongPressConnection then LongPressConnection:Disconnect() end
-                LongPressConnection = task.delay(LongPressThreshold, function()
-                    if IsHolding and WatermarkBackground.Visible then
-                        -- 长按触发，开始渐隐
-                        CreateFadeOutAnimation()
-                    end
-                end)
-                
-                -- 监听输入结束
-                local EndedConnection
-                EndedConnection = input.Changed:Connect(function()
-                    if input.UserInputState == Enum.UserInputState.End then
-                        if LongPressConnection then
-                            LongPressConnection:Disconnect()
-                            LongPressConnection = nil
-                        end
-                        local holdDuration = tick() - (HoldStartTime or tick())
-                        IsHolding = false
-                        
-                        -- 松手后恢复显示
-                        if WatermarkBackground.Visible then
-                            if holdDuration >= LongPressThreshold then
-                                -- 长按后松手，渐显
-                                CreateFadeInAnimation()
-                            else
-                                -- 短按后松手，恢复透明度
-                                ResetTransparency()
-                            end
-                        end
-                        
-                        if EndedConnection then
-                            EndedConnection:Disconnect()
-                        end
-                    end
-                end)
-            end
-        end)
-    end
-    
-    SetupLongPressEvents(WatermarkBackground)
-    SetupLongPressEvents(WatermarkLabel)
-    
-    local originalDraggable = Library:MakeDraggable(WatermarkBackground, WatermarkLabel, true)
-    
     local function ResizeWatermark()
         local X, Y = Library:GetTextBounds(WatermarkLabel.Text, Library.Scheme.Font, 15)
         WatermarkBackground.Size = UDim2.fromOffset((12 + X + 12 + 4) * Library.DPIScale, Y + 12 + 4)
@@ -1830,7 +1731,6 @@ do
         WatermarkBackground.Visible = Visible
         if Visible then
             ResizeWatermark()
-            ResetTransparency()
         end
     end
 
@@ -1839,6 +1739,7 @@ do
         ResizeWatermark()
     end
 end
+
 --// Context Menu \\--
 local CurrentMenu
 function Library:AddContextMenu(
@@ -6892,6 +6793,7 @@ function Library:CreateWindow(WindowInfo)
         local avatarUrl = "rbxassetid://0"
         pcall(function()
             avatarUrl = game.Players:GetUserThumbnailAsync(game.Players.LocalPlayer.UserId, Enum.ThumbnailType.AvatarThumbnail, Enum.ThumbnailSize.Size420x420)
+            )
         end)
 
         local AvatarFrame = New("Frame", {
