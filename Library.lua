@@ -6378,6 +6378,19 @@ function Library:CreateWindow(WindowInfo)
                 Position = true,
             },
         })
+        
+local Shadow = New("Frame", {
+    BackgroundColor3 = Color3.fromRGB(0, 0, 0),
+    BackgroundTransparency = 0.5,
+    Position = UDim2.fromOffset(4, 4),
+    Size = UDim2.new(1, 0, 1, 0),
+    ZIndex = -1,
+    Parent = MainFrame,
+})
+New("UICorner", {
+    CornerRadius = UDim.new(0, WindowInfo.CornerRadius),
+    Parent = Shadow,
+})
         New("UICorner", {
             CornerRadius = UDim.new(0, WindowInfo.CornerRadius),
             Parent = MainFrame,
@@ -6427,6 +6440,30 @@ function Library:CreateWindow(WindowInfo)
         if WindowInfo.Center then
             MainFrame.Position = UDim2.new(0.5, -MainFrame.Size.X.Offset / 2, 0.5, -MainFrame.Size.Y.Offset / 2)
         end
+
+local BackgroundContainer = New("Frame", {
+    BackgroundTransparency = 0.3,
+    BackgroundColor3 = Library.Scheme.BackgroundColor,
+    Size = UDim2.fromScale(1, 1),
+    Position = UDim2.fromScale(0, 0),
+    Parent = MainFrame,
+    ZIndex = 0,
+})
+
+local SnowEffect = Library:AddSnowEffect(BackgroundContainer, 40, 10, 0.7)
+
+Window.SetSnowVisible = function(visible)
+    if SnowEffect then
+        SnowEffect.SetVisible(visible)
+    end
+end
+
+Window.RemoveSnowEffect = function()
+    if SnowEffect then
+        SnowEffect.Destroy()
+        SnowEffect = nil
+    end
+end
 
         --// Top Bar \\-
         local TopBar = New("Frame", {
@@ -6736,6 +6773,14 @@ LayoutRefs.WindowTitle = WindowTitle
         })
         LayoutRefs.TabsFrame = Tabs
 
+--// Divider Line Before Player Info \\--
+local PlayerInfoDivider = Library:MakeLine(MainFrame, {
+    Position = UDim2.new(0, 0, 1, -61),
+    Size = UDim2.new(0, GetSidebarWidth(), 0, 1),
+    ZIndex = 2,
+})
+LayoutRefs.PlayerInfoDivider = PlayerInfoDivider
+
 --// Player Info Frame \\--
 local PlayerInfoFrame = New("Frame", {
     BackgroundTransparency = 0,
@@ -6764,8 +6809,6 @@ pcall(function()
     avatarUrl = game.Players:GetUserThumbnailAsync(game.Players.LocalPlayer.UserId, Enum.ThumbnailType.AvatarThumbnail, Enum.ThumbnailSize.Size420x420)
 end)
 
-local customImageUrl = "rbxassetid://18534346456"
-
 local AvatarFrame = New("Frame", {
     BackgroundTransparency = 1,
     Size = UDim2.fromOffset(32, 32),
@@ -6779,23 +6822,7 @@ local AvatarImage = New("ImageLabel", {
     BackgroundColor3 = Color3.fromRGB(181, 181, 181),
     Size = UDim2.fromOffset(32, 32),
     Position = UDim2.fromOffset(0, 0),
-    Image = "",
-    ImageColor3 = Color3.fromRGB(255, 255, 255),
-    ImageTransparency = 1,
-    ZIndex = 3,
-    Parent = AvatarFrame,
-})
-New("UICorner", {
-    CornerRadius = UDim.new(1, 0),
-    Parent = AvatarImage,
-})
-
-local CustomImage = New("ImageLabel", {
-    BackgroundTransparency = 0,
-    BackgroundColor3 = Color3.fromRGB(181, 181, 181),
-    Size = UDim2.fromOffset(32, 32),
-    Position = UDim2.fromOffset(0, 0),
-    Image = customImageUrl,
+    Image = avatarUrl,
     ImageColor3 = Color3.fromRGB(255, 255, 255),
     ImageTransparency = 0,
     ZIndex = 3,
@@ -6803,7 +6830,7 @@ local CustomImage = New("ImageLabel", {
 })
 New("UICorner", {
     CornerRadius = UDim.new(1, 0),
-    Parent = CustomImage,
+    Parent = AvatarImage,
 })
 
 local DisplayNameLabel = New("TextLabel", {
@@ -6815,7 +6842,7 @@ local DisplayNameLabel = New("TextLabel", {
     TextColor3 = Library.Scheme.FontColor,
     TextXAlignment = Enum.TextXAlignment.Left,
     ZIndex = 3,
-    Visible = false,
+    Visible = true,
     Parent = PlayerInfoFrame,
 })
 
@@ -6828,7 +6855,7 @@ local UsernameLabel = New("TextLabel", {
     TextColor3 = Color3.fromRGB(200, 200, 200),
     TextXAlignment = Enum.TextXAlignment.Left,
     ZIndex = 3,
-    Visible = false,
+    Visible = true,
     Parent = PlayerInfoFrame,
 })
 
@@ -6836,16 +6863,16 @@ local AXUserLabel = New("TextLabel", {
     BackgroundTransparency = 1,
     Size = UDim2.new(0, 80, 0, 12),
     Position = UDim2.fromOffset(50, 14),
-    Text = "Xi.",
+    Text = "Matrix.",
     TextSize = 12,
     TextColor3 = Color3.fromRGB(200, 200, 200),
     TextXAlignment = Enum.TextXAlignment.Left,
     ZIndex = 3,
-    Visible = true,
+    Visible = false,
     Parent = PlayerInfoFrame,
 })
 
-local isInfoHidden = true
+local isInfoHidden = false
 
 BlockerButton.MouseButton1Click:Connect(function()
     isInfoHidden = not isInfoHidden
@@ -6854,7 +6881,6 @@ BlockerButton.MouseButton1Click:Connect(function()
         AvatarImage.BackgroundColor3 = Color3.fromRGB(181, 181, 181)
         AvatarImage.BackgroundTransparency = 0
         AvatarImage.ImageTransparency = 1
-        CustomImage.Visible = true
         DisplayNameLabel.Visible = false
         UsernameLabel.Visible = false
         AXUserLabel.Visible = true
@@ -6863,7 +6889,6 @@ BlockerButton.MouseButton1Click:Connect(function()
         AvatarImage.BackgroundTransparency = 1
         AvatarImage.ImageColor3 = Color3.fromRGB(255, 255, 255)
         AvatarImage.ImageTransparency = 0
-        CustomImage.Visible = false
         DisplayNameLabel.Visible = true
         UsernameLabel.Visible = true
         AXUserLabel.Visible = false
@@ -7620,39 +7645,52 @@ Tabs.CanvasSize = UDim2.new(0, 0, 0, Tabs.UIListLayout.AbsoluteContentSize.Y + m
                     DependencyBoxes = {},
                 }
 
-                function Tab:Show()
-                    if Tabbox.ActiveTab then
-                        Tabbox.ActiveTab:Hide()
-                    end
+function Tab:Show()
+    if Tabbox.ActiveTab then
+        Tabbox.ActiveTab:Hide()
+    end
 
-                    Button.BackgroundTransparency = 1
-                    Button.TextTransparency = 0
-                    Line.Visible = false
+    Button.BackgroundTransparency = 1
+    Button.TextTransparency = 0
+    Line.Visible = false
 
-                    Container.Visible = true
+    Container.Visible = true
+    Container.BackgroundTransparency = 1
+    TweenService:Create(Container, Library.TweenInfo, {
+        BackgroundTransparency = 0,
+    }):Play()
 
-                    Tabbox.ActiveTab = Tab
-                    Tab:Resize()
-                end
+    Tabbox.ActiveTab = Tab
+    Tab:Resize()
+end
 
-                function Tab:Hide()
-                    Button.BackgroundTransparency = 0
-                    Button.TextTransparency = 0.5
-                    Line.Visible = true
-                    Container.Visible = false
+function Tab:Hide()
+    Button.BackgroundTransparency = 0
+    Button.TextTransparency = 0.5
+    Line.Visible = true
 
-                    Tabbox.ActiveTab = nil
-                end
+    TweenService:Create(Container, Library.TweenInfo, {
+        BackgroundTransparency = 1,
+    }):Play()
+    
+    task.delay(0.15, function()
+        if Tabbox.ActiveTab ~= Tab then
+            Container.Visible = false
+        end
+    end)
 
-                local function ResizeTab()
-                    if Tabbox.ActiveTab ~= Tab then
-                        return
-                    end
+    Tabbox.ActiveTab = nil
+end
 
-                    Background.Size = UDim2.new(1, 0, 0, List.AbsoluteContentSize.Y + 53 * Library.DPIScale)
-                end
+local function ResizeTab()
+    if Tabbox.ActiveTab ~= Tab then
+        return
+    end
 
-                function Tab:Resize() task.defer(ResizeTab) end
+    Background.Size = UDim2.new(1, 0, 0, List.AbsoluteContentSize.Y + 53 * Library.DPIScale)
+end
+
+function Tab:Resize() task.defer(ResizeTab) end
 
                 --// Execution \\--
                 if not Tabbox.ActiveTab then
