@@ -6378,19 +6378,6 @@ function Library:CreateWindow(WindowInfo)
                 Position = true,
             },
         })
-        
-local Shadow = New("Frame", {
-    BackgroundColor3 = Color3.fromRGB(0, 0, 0),
-    BackgroundTransparency = 0.5,
-    Position = UDim2.fromOffset(4, 4),
-    Size = UDim2.new(1, 0, 1, 0),
-    ZIndex = -1,
-    Parent = MainFrame,
-})
-New("UICorner", {
-    CornerRadius = UDim.new(0, WindowInfo.CornerRadius),
-    Parent = Shadow,
-})
         New("UICorner", {
             CornerRadius = UDim.new(0, WindowInfo.CornerRadius),
             Parent = MainFrame,
@@ -6441,29 +6428,30 @@ New("UICorner", {
             MainFrame.Position = UDim2.new(0.5, -MainFrame.Size.X.Offset / 2, 0.5, -MainFrame.Size.Y.Offset / 2)
         end
 
-local BackgroundContainer = New("Frame", {
-    BackgroundTransparency = 0.3,
-    BackgroundColor3 = Library.Scheme.BackgroundColor,
-    Size = UDim2.fromScale(1, 1),
-    Position = UDim2.fromScale(0, 0),
-    Parent = MainFrame,
-    ZIndex = 0,
-})
+local Shadows = {}
+local ShadowLayers = {8, 12, 16}
 
-local SnowEffect = Library:AddSnowEffect(BackgroundContainer, 40, 10, 0.7)
-
-Window.SetSnowVisible = function(visible)
-    if SnowEffect then
-        SnowEffect.SetVisible(visible)
-    end
+for i, Offset in ipairs(ShadowLayers) do
+    local Shadow = New("Frame", {
+        BackgroundColor3 = Color3.fromRGB(0, 0, 0),
+        BackgroundTransparency = 0.85 - (i * 0.05),
+        Position = UDim2.fromOffset(Offset, Offset),
+        Size = UDim2.new(1, 0, 1, 0),
+        ZIndex = -i,
+        Parent = MainFrame,
+    })
+    New("UICorner", {
+        CornerRadius = UDim.new(0, WindowInfo.CornerRadius),
+        Parent = Shadow,
+    })
+    table.insert(Shadows, Shadow)
 end
 
-Window.RemoveSnowEffect = function()
-    if SnowEffect then
-        SnowEffect.Destroy()
-        SnowEffect = nil
+MainFrame:GetPropertyChangedSignal("AbsoluteSize"):Connect(function()
+    for i, Shadow in ipairs(Shadows) do
+        Shadow.Size = MainFrame.Size
     end
-end
+end)
 
         --// Top Bar \\-
         local TopBar = New("Frame", {
@@ -6489,27 +6477,7 @@ New("UIListLayout", {
 })
 LayoutRefs.TitleHolder = TitleHolder
 
-local WindowIcon
-if WindowInfo.Icon then
-    WindowIcon = New("ImageButton", {
-        Image = if tonumber(WindowInfo.Icon)
-            then string.format("rbxassetid://%d", WindowInfo.Icon)
-            else WindowInfo.Icon,
-        Size = WindowInfo.IconSize,
-        BackgroundTransparency = 1,
-        Parent = TitleHolder,
-    })
-else
-    WindowIcon = New("TextButton", {
-        Text = WindowInfo.Title:sub(1, 1),
-        TextScaled = true,
-        Size = WindowInfo.IconSize,
-        BackgroundTransparency = 1,
-        Parent = TitleHolder,
-    })
-end
-WindowIcon.Visible = WindowInfo.Icon ~= nil or LayoutState.IsCompact
-LayoutRefs.WindowIcon = WindowIcon
+LayoutRefs.WindowIcon = nil
 
 local WindowTitle = New("TextLabel", {
     BackgroundTransparency = 1,
@@ -6518,7 +6486,9 @@ local WindowTitle = New("TextLabel", {
     TextColor3 = Color3.fromRGB(255, 255, 255),
     Font = Enum.Font.GothamBold,
     Visible = not LayoutState.IsCompact,
-    Parent = TitleHolder,
+    Position = UDim2.fromScale(0.5, 0.5),
+    AnchorPoint = Vector2.new(0.5, 0.5),
+    Parent = TopBar,
 })
 
 local UIGradient = Instance.new("UIGradient")
@@ -7495,41 +7465,71 @@ Tabs.CanvasSize = UDim2.new(0, 0, 0, Tabs.UIListLayout.AbsoluteContentSize.Y + m
                     Parent = GroupboxLabel,
                 })
 
-                GroupboxContainer = New("Frame", {
-                    BackgroundTransparency = 1,
-                    Position = UDim2.fromOffset(0, 35),
-                    Size = UDim2.new(1, 0, 1, -35),
-                    Parent = GroupboxHolder,
-                })
+GroupboxContainer = New("Frame", {
+    BackgroundTransparency = 1,
+    Position = UDim2.fromOffset(0, 35),
+    Size = UDim2.new(1, 0, 1, -35),
+    Parent = GroupboxHolder,
+})
 
-                GroupboxList = New("UIListLayout", {
-                    Padding = UDim.new(0, 8),
-                    Parent = GroupboxContainer,
-                })
-                New("UIPadding", {
-                    PaddingBottom = UDim.new(0, 7),
-                    PaddingLeft = UDim.new(0, 7),
-                    PaddingRight = UDim.new(0, 7),
-                    PaddingTop = UDim.new(0, 7),
-                    Parent = GroupboxContainer,
-                })
-            end
+GroupboxList = New("UIListLayout", {
+    Padding = UDim.new(0, 8),
+    Parent = GroupboxContainer,
+})
+New("UIPadding", {
+    PaddingBottom = UDim.new(0, 7),
+    PaddingLeft = UDim.new(0, 7),
+    PaddingRight = UDim.new(0, 7),
+    PaddingTop = UDim.new(0, 7),
+    Parent = GroupboxContainer,
+})
 
-            local Groupbox = {
-                BoxHolder = BoxHolder,
-                Holder = Background,
-                Container = GroupboxContainer,
+local isCollapsed = false
+local CollapseBtn = New("ImageButton", {
+    Image = "rbxassetid://6031098373",
+    ImageColor3 = "FontColor",
+    ImageTransparency = 0.5,
+    BackgroundTransparency = 1,
+    Size = UDim2.fromOffset(20, 20),
+    Position = UDim2.new(1, -28, 0.5, 0),
+    AnchorPoint = Vector2.new(1, 0.5),
+    Parent = GroupboxHolder,
+})
 
-                Tab = Tab,
-                DependencyBoxes = {},
-                Elements = {},
-            }
+local ContentContainer = GroupboxContainer
 
-            local function ResizeGroupbox()
-                Background.Size = UDim2.new(1, 0, 0, GroupboxList.AbsoluteContentSize.Y + 53 * Library.DPIScale)
-            end
+local Groupbox = {
+    BoxHolder = BoxHolder,
+    Holder = Background,
+    Container = GroupboxContainer,
 
-            function Groupbox:Resize() task.defer(ResizeGroupbox) end
+    Tab = Tab,
+    DependencyBoxes = {},
+    Elements = {},
+    Collapsed = false,
+}
+
+local function ResizeGroupbox()
+    local Height
+    if Groupbox.Collapsed then
+        Height = 34 + 16 * Library.DPIScale
+    else
+        Height = GroupboxList.AbsoluteContentSize.Y + 53 * Library.DPIScale
+    end
+    Background.Size = UDim2.new(1, 0, 0, Height)
+end
+
+function Groupbox:Resize() task.defer(ResizeGroupbox) end
+
+function Groupbox:ToggleCollapse()
+    Groupbox.Collapsed = not Groupbox.Collapsed
+    Groupbox:Resize()
+end
+
+function Groupbox:SetCollapsed(Collapsed)
+    Groupbox.Collapsed = Collapsed
+    Groupbox:Resize()
+end
 
             setmetatable(Groupbox, BaseGroupbox)
 
@@ -7645,52 +7645,39 @@ Tabs.CanvasSize = UDim2.new(0, 0, 0, Tabs.UIListLayout.AbsoluteContentSize.Y + m
                     DependencyBoxes = {},
                 }
 
-function Tab:Show()
-    if Tabbox.ActiveTab then
-        Tabbox.ActiveTab:Hide()
-    end
+                function Tab:Show()
+                    if Tabbox.ActiveTab then
+                        Tabbox.ActiveTab:Hide()
+                    end
 
-    Button.BackgroundTransparency = 1
-    Button.TextTransparency = 0
-    Line.Visible = false
+                    Button.BackgroundTransparency = 1
+                    Button.TextTransparency = 0
+                    Line.Visible = false
 
-    Container.Visible = true
-    Container.BackgroundTransparency = 1
-    TweenService:Create(Container, Library.TweenInfo, {
-        BackgroundTransparency = 0,
-    }):Play()
+                    Container.Visible = true
 
-    Tabbox.ActiveTab = Tab
-    Tab:Resize()
-end
+                    Tabbox.ActiveTab = Tab
+                    Tab:Resize()
+                end
 
-function Tab:Hide()
-    Button.BackgroundTransparency = 0
-    Button.TextTransparency = 0.5
-    Line.Visible = true
+                function Tab:Hide()
+                    Button.BackgroundTransparency = 0
+                    Button.TextTransparency = 0.5
+                    Line.Visible = true
+                    Container.Visible = false
 
-    TweenService:Create(Container, Library.TweenInfo, {
-        BackgroundTransparency = 1,
-    }):Play()
-    
-    task.delay(0.15, function()
-        if Tabbox.ActiveTab ~= Tab then
-            Container.Visible = false
-        end
-    end)
+                    Tabbox.ActiveTab = nil
+                end
 
-    Tabbox.ActiveTab = nil
-end
+                local function ResizeTab()
+                    if Tabbox.ActiveTab ~= Tab then
+                        return
+                    end
 
-local function ResizeTab()
-    if Tabbox.ActiveTab ~= Tab then
-        return
-    end
+                    Background.Size = UDim2.new(1, 0, 0, List.AbsoluteContentSize.Y + 53 * Library.DPIScale)
+                end
 
-    Background.Size = UDim2.new(1, 0, 0, List.AbsoluteContentSize.Y + 53 * Library.DPIScale)
-end
-
-function Tab:Resize() task.defer(ResizeTab) end
+                function Tab:Resize() task.defer(ResizeTab) end
 
                 --// Execution \\--
                 if not Tabbox.ActiveTab then
