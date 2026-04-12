@@ -1,16 +1,14 @@
-local cloneref = (cloneref or clonereference or function(instance: any)
+local cloneref = (cloneref or clonereference or function(instance)
     return instance
 end)
 local clonefunction = (clonefunction or copyfunction or function(func) 
     return func 
 end)
 
-local HttpService: HttpService = cloneref(game:GetService("HttpService"))
+local HttpService = cloneref(game:GetService("HttpService"))
 local isfolder, isfile, listfiles = isfolder, isfile, listfiles
 
 if typeof(clonefunction) == "function" then
-    -- Fix is_____ functions for shitsploits, those functions should never error, only return a boolean.
-
     local
         isfolder_copy,
         isfile_copy,
@@ -42,7 +40,6 @@ local ThemeManager = {}
 do
     local ThemeFields = { "FontColor", "MainColor", "AccentColor", "BackgroundColor", "OutlineColor" }
     ThemeManager.Folder = "ObsidianLibSettings"
-    -- if not isfolder(ThemeManager.Folder) then makefolder(ThemeManager.Folder) end
 
     ThemeManager.Library = nil
     ThemeManager.AppliedToTab = false
@@ -125,7 +122,6 @@ do
         self.Library = library
     end
 
-    --// Folders \\--
     function ThemeManager:GetPaths()
         local paths = {}
 
@@ -165,7 +161,6 @@ do
         self:BuildFolderTree()
     end
 
-    --// Apply, Update theme \\--
     function ThemeManager:ApplyTheme(theme)
         local customThemeData = self:GetCustomTheme(theme)
         local data = customThemeData or self.BuiltInThemes[theme]
@@ -206,7 +201,6 @@ do
         self.Library:UpdateColorsUsingRegistry()
     end
 
-    --// Get, Load, Save, Delete, Refresh \\--
     function ThemeManager:GetCustomTheme(file)
         local path = self.Folder .. "/themes/" .. file .. ".json"
         if not isfile(path) then
@@ -334,8 +328,6 @@ do
         for i = 1, #list do
             local file = list[i]
             if file:sub(-5) == ".json" then
-                -- i hate this but it has to be done ...
-
                 local pos = file:find(".json", 1, true)
                 local start = pos
 
@@ -354,7 +346,6 @@ do
         return out
     end
 
-    --// GUI \\--
     function ThemeManager:CreateThemeManager(groupbox)
         groupbox
             :AddLabel("Background color")
@@ -382,11 +373,11 @@ do
 
         groupbox:AddDivider()
 
-        groupbox:AddDropdown("ThemeManager_ThemeList", { Text = "主题列表", Values = ThemesArray, Default = 1 })
-        groupbox:AddButton("设为默认值", function()
+        groupbox:AddDropdown("ThemeManager_ThemeList", { Text = "Theme List", Values = ThemesArray, Default = 1 })
+        groupbox:AddButton("Set As Default", function()
             self:SaveDefault(self.Library.Options.ThemeManager_ThemeList.Value)
             self.Library:Notify(
-                string.format("将默认主题设置为 %q", self.Library.Options.ThemeManager_ThemeList.Value)
+                string.format("Set default theme to %q", self.Library.Options.ThemeManager_ThemeList.Value)
             )
         end)
 
@@ -396,18 +387,18 @@ do
 
         groupbox:AddDivider()
 
-        groupbox:AddInput("ThemeManager_CustomThemeName", { Text = "自定义主题名称" })
-        groupbox:AddButton("创建主题", function()
+        groupbox:AddInput("ThemeManager_CustomThemeName", { Text = "Custom Theme Name" })
+        groupbox:AddButton("Create Theme", function()
             local name = self.Library.Options.ThemeManager_CustomThemeName.Value
 
             if name:gsub(" ", "") == "" then
-                self.Library:Notify("无效的主题名称(空)", 2)
+                self.Library:Notify("Invalid theme name (empty)", 2)
                 return
             end
 
             self:SaveCustomTheme(name)
 
-            self.Library:Notify(string.format("创建的主题 %q", name))
+            self.Library:Notify(string.format("Created theme %q", name))
             self.Library.Options.ThemeManager_CustomThemeList:SetValues(self:ReloadCustomThemes())
             self.Library.Options.ThemeManager_CustomThemeList:SetValue(nil)
         end)
@@ -416,38 +407,38 @@ do
 
         groupbox:AddDropdown(
             "ThemeManager_CustomThemeList",
-            { Text = "自定义主题", Values = self:ReloadCustomThemes(), AllowNull = true, Default = 1 }
+            { Text = "Custom Themes", Values = self:ReloadCustomThemes(), AllowNull = true, Default = 1 }
         )
-        groupbox:AddButton("加载主题", function()
+        groupbox:AddButton("Load Theme", function()
             local name = self.Library.Options.ThemeManager_CustomThemeList.Value
 
             self:ApplyTheme(name)
-            self.Library:Notify(string.format("加载的主题 %q", name))
+            self.Library:Notify(string.format("Loaded theme %q", name))
         end)
-        groupbox:AddButton("覆盖主题", function()
+        groupbox:AddButton("Overwrite Theme", function()
             local name = self.Library.Options.ThemeManager_CustomThemeList.Value
 
             self:SaveCustomTheme(name)
-            self.Library:Notify(string.format("覆盖配置 %q", name))
+            self.Library:Notify(string.format("Overwrote theme %q", name))
         end)
-        groupbox:AddButton("删除主题", function()
+        groupbox:AddButton("Delete Theme", function()
             local name = self.Library.Options.ThemeManager_CustomThemeList.Value
 
             local success, err = self:Delete(name)
             if not success then
-                self.Library:Notify("无法删除主题: " .. err)
+                self.Library:Notify("Failed to delete theme: " .. err)
                 return
             end
 
-            self.Library:Notify(string.format("删除的主题 %q", name))
+            self.Library:Notify(string.format("Deleted theme %q", name))
             self.Library.Options.ThemeManager_CustomThemeList:SetValues(self:ReloadCustomThemes())
             self.Library.Options.ThemeManager_CustomThemeList:SetValue(nil)
         end)
-        groupbox:AddButton("刷新列表", function()
+        groupbox:AddButton("Refresh List", function()
             self.Library.Options.ThemeManager_CustomThemeList:SetValues(self:ReloadCustomThemes())
             self.Library.Options.ThemeManager_CustomThemeList:SetValue(nil)
         end)
-        groupbox:AddButton("设为默认值", function()
+        groupbox:AddButton("Set As Default", function()
             if
                 self.Library.Options.ThemeManager_CustomThemeList.Value ~= nil
                 and self.Library.Options.ThemeManager_CustomThemeList.Value ~= ""
@@ -458,7 +449,7 @@ do
                 )
             end
         end)
-        groupbox:AddButton("重置默认值", function()
+        groupbox:AddButton("Reset Default", function()
             local success = pcall(delfile, self.Folder .. "/themes/default.txt")
             if not success then
                 self.Library:Notify("Failed to reset default: delete file error")
@@ -490,7 +481,7 @@ do
 
     function ThemeManager:CreateGroupBox(tab)
         assert(self.Library, "Must set ThemeManager.Library first!")
-        return tab:AddLeftGroupbox("主题", "paintbrush")
+        return tab:AddLeftGroupbox("Themes", "paintbrush")
     end
 
     function ThemeManager:ApplyToTab(tab)
