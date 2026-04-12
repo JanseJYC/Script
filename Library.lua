@@ -6428,31 +6428,6 @@ function Library:CreateWindow(WindowInfo)
             MainFrame.Position = UDim2.new(0.5, -MainFrame.Size.X.Offset / 2, 0.5, -MainFrame.Size.Y.Offset / 2)
         end
 
-local Shadows = {}
-local ShadowLayers = {8, 12, 16}
-
-for i, Offset in ipairs(ShadowLayers) do
-    local Shadow = New("Frame", {
-        BackgroundColor3 = Color3.fromRGB(0, 0, 0),
-        BackgroundTransparency = 0.85 - (i * 0.05),
-        Position = UDim2.fromOffset(Offset, Offset),
-        Size = UDim2.new(1, 0, 1, 0),
-        ZIndex = -i,
-        Parent = MainFrame,
-    })
-    New("UICorner", {
-        CornerRadius = UDim.new(0, WindowInfo.CornerRadius),
-        Parent = Shadow,
-    })
-    table.insert(Shadows, Shadow)
-end
-
-MainFrame:GetPropertyChangedSignal("AbsoluteSize"):Connect(function()
-    for i, Shadow in ipairs(Shadows) do
-        Shadow.Size = MainFrame.Size
-    end
-end)
-
         --// Top Bar \\-
         local TopBar = New("Frame", {
             BackgroundTransparency = 1,
@@ -7465,71 +7440,41 @@ Tabs.CanvasSize = UDim2.new(0, 0, 0, Tabs.UIListLayout.AbsoluteContentSize.Y + m
                     Parent = GroupboxLabel,
                 })
 
-GroupboxContainer = New("Frame", {
-    BackgroundTransparency = 1,
-    Position = UDim2.fromOffset(0, 35),
-    Size = UDim2.new(1, 0, 1, -35),
-    Parent = GroupboxHolder,
-})
+                GroupboxContainer = New("Frame", {
+                    BackgroundTransparency = 1,
+                    Position = UDim2.fromOffset(0, 35),
+                    Size = UDim2.new(1, 0, 1, -35),
+                    Parent = GroupboxHolder,
+                })
 
-GroupboxList = New("UIListLayout", {
-    Padding = UDim.new(0, 8),
-    Parent = GroupboxContainer,
-})
-New("UIPadding", {
-    PaddingBottom = UDim.new(0, 7),
-    PaddingLeft = UDim.new(0, 7),
-    PaddingRight = UDim.new(0, 7),
-    PaddingTop = UDim.new(0, 7),
-    Parent = GroupboxContainer,
-})
+                GroupboxList = New("UIListLayout", {
+                    Padding = UDim.new(0, 8),
+                    Parent = GroupboxContainer,
+                })
+                New("UIPadding", {
+                    PaddingBottom = UDim.new(0, 7),
+                    PaddingLeft = UDim.new(0, 7),
+                    PaddingRight = UDim.new(0, 7),
+                    PaddingTop = UDim.new(0, 7),
+                    Parent = GroupboxContainer,
+                })
+            end
 
-local isCollapsed = false
-local CollapseBtn = New("ImageButton", {
-    Image = "rbxassetid://6031098373",
-    ImageColor3 = "FontColor",
-    ImageTransparency = 0.5,
-    BackgroundTransparency = 1,
-    Size = UDim2.fromOffset(20, 20),
-    Position = UDim2.new(1, -28, 0.5, 0),
-    AnchorPoint = Vector2.new(1, 0.5),
-    Parent = GroupboxHolder,
-})
+            local Groupbox = {
+                BoxHolder = BoxHolder,
+                Holder = Background,
+                Container = GroupboxContainer,
 
-local ContentContainer = GroupboxContainer
+                Tab = Tab,
+                DependencyBoxes = {},
+                Elements = {},
+            }
 
-local Groupbox = {
-    BoxHolder = BoxHolder,
-    Holder = Background,
-    Container = GroupboxContainer,
+            local function ResizeGroupbox()
+                Background.Size = UDim2.new(1, 0, 0, GroupboxList.AbsoluteContentSize.Y + 53 * Library.DPIScale)
+            end
 
-    Tab = Tab,
-    DependencyBoxes = {},
-    Elements = {},
-    Collapsed = false,
-}
-
-local function ResizeGroupbox()
-    local Height
-    if Groupbox.Collapsed then
-        Height = 34 + 16 * Library.DPIScale
-    else
-        Height = GroupboxList.AbsoluteContentSize.Y + 53 * Library.DPIScale
-    end
-    Background.Size = UDim2.new(1, 0, 0, Height)
-end
-
-function Groupbox:Resize() task.defer(ResizeGroupbox) end
-
-function Groupbox:ToggleCollapse()
-    Groupbox.Collapsed = not Groupbox.Collapsed
-    Groupbox:Resize()
-end
-
-function Groupbox:SetCollapsed(Collapsed)
-    Groupbox.Collapsed = Collapsed
-    Groupbox:Resize()
-end
+            function Groupbox:Resize() task.defer(ResizeGroupbox) end
 
             setmetatable(Groupbox, BaseGroupbox)
 
@@ -8109,13 +8054,13 @@ end
     end
 
     if Library.IsMobile then
-        local ToggleButton = Library:AddDraggableButton("    开关    ", function()
+        local ToggleButton = Library:AddDraggableButton("    On/off    ", function()
             Library:Toggle()
         end)
 
-    local LockButton = Library:AddDraggableButton("锁住", function(self)
+    local LockButton = Library:AddDraggableButton("Clock", function(self)
             Library.CantDragForced = not Library.CantDragForced
-            self:SetText(Library.CantDragForced and "解锁" or "锁住")
+            self:SetText(Library.CantDragForced and "UnClock" or "Clock")
         end)
 
         if WindowInfo.MobileButtonsSide == "Right" then
