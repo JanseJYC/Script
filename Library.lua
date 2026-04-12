@@ -6452,7 +6452,45 @@ New("UIListLayout", {
 })
 LayoutRefs.TitleHolder = TitleHolder
 
-LayoutRefs.WindowIcon = nil
+local WindowIcon
+if WindowInfo.Icon then
+    WindowIcon = New("ImageButton", {
+        Image = if tonumber(WindowInfo.Icon) then string.format("rbxassetid://%d", WindowInfo.Icon) else WindowInfo.Icon,
+        Size = WindowInfo.IconSize,
+        BackgroundTransparency = 1,
+        Parent = TitleHolder,
+    })
+else
+    WindowIcon = New("TextButton", {
+        Text = WindowInfo.Title:sub(1, 1),
+        TextScaled = true,
+        Size = WindowInfo.IconSize,
+        BackgroundTransparency = 1,
+        Parent = TitleHolder,
+    })
+end
+WindowIcon.Visible = WindowInfo.Icon ~= nil or LayoutState.IsCompact
+LayoutRefs.WindowIcon = WindowIcon
+
+local WindowTitle = New("TextLabel", {
+    BackgroundTransparency = 1,
+    Text = WindowInfo.Title,
+    TextSize = 20,
+    TextColor3 = Color3.fromRGB(255, 255, 255),
+    Font = Enum.Font.GothamBold,
+    Visible = not LayoutState.IsCompact,
+    Parent = TitleHolder,  -- 注意：Parent 是 TitleHolder，不是 TopBar
+})
+
+if not LayoutState.IsCompact then
+    local MaxTextWidth = math.max(0, InitialSidebarWidth - (WindowInfo.Icon and WindowInfo.IconSize.X.Offset + 12 or 12))
+    local TextWidth = Library:GetTextBounds(WindowTitle.Text, Library.Scheme.Font, 20, MaxTextWidth)
+    WindowTitle.Size = UDim2.new(0, TextWidth, 1, 0)
+else
+    WindowTitle.Size = UDim2.new(0, 0, 1, 0)
+end
+
+LayoutRefs.WindowTitle = WindowTitle
 
 local WindowTitle = New("TextLabel", {
     BackgroundTransparency = 1,
@@ -8054,7 +8092,7 @@ Tabs.CanvasSize = UDim2.new(0, 0, 0, Tabs.UIListLayout.AbsoluteContentSize.Y + m
     end
 
     if Library.IsMobile then
-        local ToggleButton = Library:AddDraggableButton("    On/off    ", function()
+        local ToggleButton = Library:AddDraggableButton("On/off", function()
             Library:Toggle()
         end)
 
