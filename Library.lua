@@ -6452,6 +6452,7 @@ New("UIListLayout", {
 })
 LayoutRefs.TitleHolder = TitleHolder
 
+-- 图标（保留）
 local WindowIcon
 if WindowInfo.Icon then
     WindowIcon = New("ImageButton", {
@@ -6472,6 +6473,7 @@ end
 WindowIcon.Visible = WindowInfo.Icon ~= nil or LayoutState.IsCompact
 LayoutRefs.WindowIcon = WindowIcon
 
+-- 标题（带渐变）
 local WindowTitle = New("TextLabel", {
     BackgroundTransparency = 1,
     Text = WindowInfo.Title,
@@ -6479,8 +6481,32 @@ local WindowTitle = New("TextLabel", {
     TextColor3 = Color3.fromRGB(255, 255, 255),
     Font = Enum.Font.GothamBold,
     Visible = not LayoutState.IsCompact,
-    Parent = TitleHolder,  -- 注意：Parent 是 TitleHolder，不是 TopBar
+    Parent = TitleHolder,
 })
+
+-- 添加彩虹渐变
+local UIGradient = Instance.new("UIGradient")
+UIGradient.Color = ColorSequence.new{
+    ColorSequenceKeypoint.new(0.00, Color3.fromRGB(255, 0, 0)),
+    ColorSequenceKeypoint.new(0.10, Color3.fromRGB(255, 127, 0)),
+    ColorSequenceKeypoint.new(0.20, Color3.fromRGB(255, 255, 0)),
+    ColorSequenceKeypoint.new(0.30, Color3.fromRGB(0, 255, 0)),
+    ColorSequenceKeypoint.new(0.40, Color3.fromRGB(0, 255, 255)),
+    ColorSequenceKeypoint.new(0.50, Color3.fromRGB(0, 0, 255)),
+    ColorSequenceKeypoint.new(0.60, Color3.fromRGB(139, 0, 255)),
+    ColorSequenceKeypoint.new(0.70, Color3.fromRGB(255, 0, 0)),
+    ColorSequenceKeypoint.new(0.80, Color3.fromRGB(255, 127, 0)),
+    ColorSequenceKeypoint.new(0.90, Color3.fromRGB(255, 255, 0)),
+    ColorSequenceKeypoint.new(1.00, Color3.fromRGB(0, 255, 0))
+}
+UIGradient.Parent = WindowTitle
+
+-- 渐变旋转动画
+task.spawn(function()
+    while WindowTitle and WindowTitle.Parent do
+        UIGradient.Rotation = (UIGradient.Rotation + 90 * task.wait(0.05)) % 360
+    end
+end)
 
 if not LayoutState.IsCompact then
     local MaxTextWidth = math.max(0, InitialSidebarWidth - (WindowInfo.Icon and WindowInfo.IconSize.X.Offset + 12 or 12))
