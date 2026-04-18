@@ -197,7 +197,7 @@ local Library = {
         OutlineColor = Color3.fromRGB(40, 40, 40),
         FontColor = Color3.fromRGB(255, 255, 255),
         TextDim = Color3.fromRGB(235, 235, 245),
-        Font = Font.fromEnum(Enum.Font.GothamMedium),
+        --Font = Font.fromEnum(Enum.Font.GothamMedium),
 
         Red = Color3.fromRGB(255, 69, 58),
         Warn = Color3.fromRGB(255, 159, 10),
@@ -252,20 +252,21 @@ local Templates = {
     },
     TextLabel = {
         BorderSizePixel = 0,
-        FontFace = "Font",
+        --FontFace = "Font",
+        Font = Enum.Font.GothamMedium,  -- ← 添加这行
         RichText = true,
         TextColor3 = "FontColor",
     },
     TextButton = {
         AutoButtonColor = false,
         BorderSizePixel = 0,
-        FontFace = "Font",
+        Font = Enum.Font.GothamMedium,  -- ← 添加这行
         RichText = true,
         TextColor3 = "FontColor",
     },
     TextBox = {
         BorderSizePixel = 0,
-        FontFace = "Font",
+        Font = Enum.Font.GothamMedium,  -- ← 添加这行
         PlaceholderColor3 = function()
             local H, S, V = Library.Scheme.FontColor:ToHSV()
             return Color3.fromHSV(H, S, V / 2)
@@ -5785,11 +5786,14 @@ do
 end
 
 function Library:SetFont(FontFace)
-    if typeof(FontFace) == "EnumItem" then
-        FontFace = Font.fromEnum(FontFace)
-    end
-
-    Library.Scheme.Font = FontFace
+    -- 删除原来的判断
+    -- if typeof(FontFace) == "EnumItem" then
+    --     FontFace = Font.fromEnum(FontFace)
+    -- end
+    -- Library.Scheme.Font = FontFace
+    
+    -- 改为：
+    Library.Scheme.Font = FontFace  -- FontFace 直接就是 Enum 值
     Library:UpdateColorsUsingRegistry()
 end
 
