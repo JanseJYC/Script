@@ -197,7 +197,7 @@ local Library = {
         OutlineColor = Color3.fromRGB(40, 40, 40),
         FontColor = Color3.fromRGB(255, 255, 255),
         TextDim = Color3.fromRGB(235, 235, 245),
-        --Font = Font.fromEnum(Enum.Font.GothamMedium),
+        Font = Font.fromEnum(Enum.Font.GothamMedium),
 
         Red = Color3.fromRGB(255, 69, 58),
         Warn = Color3.fromRGB(255, 159, 10),
@@ -252,21 +252,20 @@ local Templates = {
     },
     TextLabel = {
         BorderSizePixel = 0,
-        --FontFace = "Font",
-        Font = Enum.Font.GothamMedium,  -- ← 添加这行
+        FontFace = "Font",
         RichText = true,
         TextColor3 = "FontColor",
     },
     TextButton = {
         AutoButtonColor = false,
         BorderSizePixel = 0,
-        Font = Enum.Font.GothamMedium,  -- ← 添加这行
+        FontFace = "Font",
         RichText = true,
         TextColor3 = "FontColor",
     },
     TextBox = {
         BorderSizePixel = 0,
-        Font = Enum.Font.GothamMedium,  -- ← 添加这行
+        FontFace = "Font",
         PlaceholderColor3 = function()
             local H, S, V = Library.Scheme.FontColor:ToHSV()
             return Color3.fromHSV(H, S, V / 2)
@@ -5786,14 +5785,11 @@ do
 end
 
 function Library:SetFont(FontFace)
-    -- 删除原来的判断
-    -- if typeof(FontFace) == "EnumItem" then
-    --     FontFace = Font.fromEnum(FontFace)
-    -- end
-    -- Library.Scheme.Font = FontFace
-    
-    -- 改为：
-    Library.Scheme.Font = FontFace  -- FontFace 直接就是 Enum 值
+    if typeof(FontFace) == "EnumItem" then
+        FontFace = Font.fromEnum(FontFace)
+    end
+
+    Library.Scheme.Font = FontFace
     Library:UpdateColorsUsingRegistry()
 end
 
@@ -6456,11 +6452,12 @@ New("UIListLayout", {
 })
 LayoutRefs.TitleHolder = TitleHolder
 
--- 图标（保留）
 local WindowIcon
 if WindowInfo.Icon then
     WindowIcon = New("ImageButton", {
-        Image = if tonumber(WindowInfo.Icon) then string.format("rbxassetid://%d", WindowInfo.Icon) else WindowInfo.Icon,
+        Image = if tonumber(WindowInfo.Icon)
+            then string.format("rbxassetid://%d", WindowInfo.Icon)
+            else WindowInfo.Icon,
         Size = WindowInfo.IconSize,
         BackgroundTransparency = 1,
         Parent = TitleHolder,
@@ -6477,7 +6474,6 @@ end
 WindowIcon.Visible = WindowInfo.Icon ~= nil or LayoutState.IsCompact
 LayoutRefs.WindowIcon = WindowIcon
 
--- 标题（带渐变）
 local WindowTitle = New("TextLabel", {
     BackgroundTransparency = 1,
     Text = WindowInfo.Title,
@@ -6486,52 +6482,6 @@ local WindowTitle = New("TextLabel", {
     Font = Enum.Font.GothamBold,
     Visible = not LayoutState.IsCompact,
     Parent = TitleHolder,
-})
-
--- 添加彩虹渐变
-local UIGradient = Instance.new("UIGradient")
-UIGradient.Color = ColorSequence.new{
-    ColorSequenceKeypoint.new(0.00, Color3.fromRGB(255, 0, 0)),
-    ColorSequenceKeypoint.new(0.10, Color3.fromRGB(255, 127, 0)),
-    ColorSequenceKeypoint.new(0.20, Color3.fromRGB(255, 255, 0)),
-    ColorSequenceKeypoint.new(0.30, Color3.fromRGB(0, 255, 0)),
-    ColorSequenceKeypoint.new(0.40, Color3.fromRGB(0, 255, 255)),
-    ColorSequenceKeypoint.new(0.50, Color3.fromRGB(0, 0, 255)),
-    ColorSequenceKeypoint.new(0.60, Color3.fromRGB(139, 0, 255)),
-    ColorSequenceKeypoint.new(0.70, Color3.fromRGB(255, 0, 0)),
-    ColorSequenceKeypoint.new(0.80, Color3.fromRGB(255, 127, 0)),
-    ColorSequenceKeypoint.new(0.90, Color3.fromRGB(255, 255, 0)),
-    ColorSequenceKeypoint.new(1.00, Color3.fromRGB(0, 255, 0))
-}
-UIGradient.Parent = WindowTitle
-
--- 渐变旋转动画
-task.spawn(function()
-    while WindowTitle and WindowTitle.Parent do
-        UIGradient.Rotation = (UIGradient.Rotation + 90 * task.wait(0.05)) % 360
-    end
-end)
-
-if not LayoutState.IsCompact then
-    local MaxTextWidth = math.max(0, InitialSidebarWidth - (WindowInfo.Icon and WindowInfo.IconSize.X.Offset + 12 or 12))
-    local TextWidth = Library:GetTextBounds(WindowTitle.Text, Library.Scheme.Font, 20, MaxTextWidth)
-    WindowTitle.Size = UDim2.new(0, TextWidth, 1, 0)
-else
-    WindowTitle.Size = UDim2.new(0, 0, 1, 0)
-end
-
-LayoutRefs.WindowTitle = WindowTitle
-
-local WindowTitle = New("TextLabel", {
-    BackgroundTransparency = 1,
-    Text = WindowInfo.Title,
-    TextSize = 20,
-    TextColor3 = Color3.fromRGB(255, 255, 255),
-    Font = Enum.Font.GothamBold,
-    Visible = not LayoutState.IsCompact,
-    Position = UDim2.fromScale(0.5, 0.5),
-    AnchorPoint = Vector2.new(0.5, 0.5),
-    Parent = TopBar,
 })
 
 local UIGradient = Instance.new("UIGradient")
@@ -6785,138 +6735,6 @@ LayoutRefs.WindowTitle = WindowTitle
             Parent = Tabs,
         })
         LayoutRefs.TabsFrame = Tabs
-
---// Divider Line Before Player Info \\--
-local PlayerInfoDivider = Library:MakeLine(MainFrame, {
-    Position = UDim2.new(0, 0, 1, -61),
-    Size = UDim2.new(0, GetSidebarWidth(), 0, 1),
-    ZIndex = 2,
-})
-LayoutRefs.PlayerInfoDivider = PlayerInfoDivider
-
---// Player Info Frame \\--
-local PlayerInfoFrame = New("Frame", {
-    BackgroundTransparency = 0,
-    BackgroundColor3 = "BackgroundColor",
-    Size = UDim2.new(0.3, 0, 0, 40),
-    AnchorPoint = Vector2.new(0, 1),
-    Position = UDim2.new(0, 0, 1, -21),
-    ZIndex = 2,
-    Parent = MainFrame,
-})
-New("UICorner", {
-    CornerRadius = UDim.new(0, Library.CornerRadius - 1),
-    Parent = PlayerInfoFrame,
-})
-
-local BlockerButton = New("TextButton", {
-    BackgroundTransparency = 1,
-    Size = UDim2.new(1, 0, 1, 0),
-    Text = "",
-    ZIndex = 2,
-    Parent = PlayerInfoFrame,
-})
-
-local avatarUrl = "rbxassetid://0"
-pcall(function()
-    avatarUrl = game.Players:GetUserThumbnailAsync(game.Players.LocalPlayer.UserId, Enum.ThumbnailType.AvatarThumbnail, Enum.ThumbnailSize.Size420x420)
-end)
-
-local AvatarFrame = New("Frame", {
-    BackgroundTransparency = 1,
-    Size = UDim2.fromOffset(32, 32),
-    Position = UDim2.fromOffset(12, 4),
-    ZIndex = 3,
-    Parent = PlayerInfoFrame,
-})
-
-local AvatarImage = New("ImageLabel", {
-    BackgroundTransparency = 0,
-    BackgroundColor3 = Color3.fromRGB(181, 181, 181),
-    Size = UDim2.fromOffset(32, 32),
-    Position = UDim2.fromOffset(0, 0),
-    Image = avatarUrl,
-    ImageColor3 = Color3.fromRGB(255, 255, 255),
-    ImageTransparency = 0,
-    ZIndex = 3,
-    Parent = AvatarFrame,
-})
-New("UICorner", {
-    CornerRadius = UDim.new(1, 0),
-    Parent = AvatarImage,
-})
-
-local DisplayNameLabel = New("TextLabel", {
-    BackgroundTransparency = 1,
-    Size = UDim2.new(0, 80, 0, 16),
-    Position = UDim2.fromOffset(50, 4),
-    Text = game.Players.LocalPlayer.DisplayName,
-    TextSize = 12,
-    TextColor3 = Library.Scheme.FontColor,
-    TextXAlignment = Enum.TextXAlignment.Left,
-    ZIndex = 3,
-    Visible = true,
-    Parent = PlayerInfoFrame,
-})
-
-local UsernameLabel = New("TextLabel", {
-    BackgroundTransparency = 1,
-    Size = UDim2.new(0, 80, 0, 12),
-    Position = UDim2.fromOffset(50, 20),
-    Text = "@" .. game.Players.LocalPlayer.Name,
-    TextSize = 10,
-    TextColor3 = Color3.fromRGB(200, 200, 200),
-    TextXAlignment = Enum.TextXAlignment.Left,
-    ZIndex = 3,
-    Visible = true,
-    Parent = PlayerInfoFrame,
-})
-
-local AXUserLabel = New("TextLabel", {
-    BackgroundTransparency = 1,
-    Size = UDim2.new(0, 80, 0, 12),
-    Position = UDim2.fromOffset(50, 14),
-    Text = "Matrix.",
-    TextSize = 12,
-    TextColor3 = Color3.fromRGB(200, 200, 200),
-    TextXAlignment = Enum.TextXAlignment.Left,
-    ZIndex = 3,
-    Visible = false,
-    Parent = PlayerInfoFrame,
-})
-
-local isInfoHidden = false
-
-BlockerButton.MouseButton1Click:Connect(function()
-    isInfoHidden = not isInfoHidden
-    if isInfoHidden then
-        AvatarImage.Image = ""
-        AvatarImage.BackgroundColor3 = Color3.fromRGB(181, 181, 181)
-        AvatarImage.BackgroundTransparency = 0
-        AvatarImage.ImageTransparency = 1
-        DisplayNameLabel.Visible = false
-        UsernameLabel.Visible = false
-        AXUserLabel.Visible = true
-    else
-        AvatarImage.Image = avatarUrl
-        AvatarImage.BackgroundTransparency = 1
-        AvatarImage.ImageColor3 = Color3.fromRGB(255, 255, 255)
-        AvatarImage.ImageTransparency = 0
-        DisplayNameLabel.Visible = true
-        UsernameLabel.Visible = true
-        AXUserLabel.Visible = false
-    end
-    local marginBottom = 40
-    Tabs.CanvasSize = UDim2.new(0, 0, 0, Tabs.UIListLayout.AbsoluteContentSize.Y + marginBottom)
-end)
-
-Tabs.UIListLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
-    local marginBottom = 40
-    Tabs.CanvasSize = UDim2.new(0, 0, 0, Tabs.UIListLayout.AbsoluteContentSize.Y + marginBottom)
-end)
-
-local marginBottom = 40
-Tabs.CanvasSize = UDim2.new(0, 0, 0, Tabs.UIListLayout.AbsoluteContentSize.Y + marginBottom)
 
         --// Container \\--
         Container = New("Frame", {
@@ -8122,13 +7940,13 @@ Tabs.CanvasSize = UDim2.new(0, 0, 0, Tabs.UIListLayout.AbsoluteContentSize.Y + m
     end
 
     if Library.IsMobile then
-        local ToggleButton = Library:AddDraggableButton("On/off", function()
+        local ToggleButton = Library:AddDraggableButton("On/Off", function()
             Library:Toggle()
         end)
 
     local LockButton = Library:AddDraggableButton("Clock", function(self)
             Library.CantDragForced = not Library.CantDragForced
-            self:SetText(Library.CantDragForced and "UnClock" or "Clock")
+            self:SetText(Library.CantDragForced and "Unclock" or "clock")
         end)
 
         if WindowInfo.MobileButtonsSide == "Right" then
