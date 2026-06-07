@@ -1385,33 +1385,44 @@ end
 
 local dragger = {} do
     local draggerCache = { }
+    local draggingFrame = nil
+    local dragStart = nil
+    local frameStart = nil
 
     function dragger.new(frame)
-        local held = false
         frame.Active = true
 
-        frame.MouseLeave:connect(function()
-            draggerCache[frame] = false
-        end)
-
-        frame.MouseEnter:connect(function()
-            draggerCache[frame] = true
-        end)
-
-        mouse.InputBegan:Connect(function()
-            if findBrowsingTopMost() == frame then
-                if (not colorpicking) and (not sliding) and (not binding) and rawget(draggerCache, frame) then
-                    local objectPosition = Vector2.new(getMouse().X - frame.AbsolutePosition.X, getMouse().Y - frame.AbsolutePosition.Y)
-                    while mouse.held do
-                        pcall(function()
-                            resize(frame, { Position = UDim2.new(0, getMouse().X - objectPosition.X + (frame.Size.X.Offset * frame.AnchorPoint.X), 0, getMouse().Y - objectPosition.Y + (frame.Size.Y.Offset * frame.AnchorPoint.Y)) }, 0.1)
-                        end)
-                        RunService.Heartbeat:Wait()
+        frame.InputBegan:Connect(function(input)
+            if input.UserInputType == Enum.UserInputType.MouseButton1 then
+                if findBrowsingTopMost() == frame then
+                    if (not colorpicking) and (not sliding) and (not binding) then
+                        draggingFrame = frame
+                        dragStart = Vector2.new(input.Position.X, input.Position.Y)
+                        frameStart = UDim2.new(frame.Position.X.Scale, frame.Position.X.Offset, frame.Position.Y.Scale, frame.Position.Y.Offset)
                     end
                 end
             end
         end)
+
+        frame.InputEnded:Connect(function(input)
+            if input.UserInputType == Enum.UserInputType.MouseButton1 then
+                draggingFrame = nil
+                dragStart = nil
+                frameStart = nil
+            end
+        end)
     end
+
+    UserInputService.InputChanged:Connect(function(input)
+        if draggingFrame and dragStart and frameStart then
+            if input.UserInputType == Enum.UserInputType.MouseMovement then
+                local delta = Vector2.new(input.Position.X, input.Position.Y) - dragStart
+                local newX = frameStart.X.Offset + delta.X
+                local newY = frameStart.Y.Offset + delta.Y
+                draggingFrame.Position = UDim2.new(frameStart.X.Scale, newX, frameStart.Y.Scale, newY)
+            end
+        end
+    end)
 end
 
 local function betweenOpenInterval(n, n1, n2)
