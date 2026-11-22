@@ -3,8 +3,8 @@
 
 local REPO = "https://raw.githubusercontent.com/deividcomsono/Obsidian/refs/heads/main/"
 
-local BACKGROUND_URL = "https://raw.githubusercontent.com/JanseJYC/Script/main/Django_Monochrome_Frontier.jpg"
-local STARTUP_AUDIO_URL = "https://raw.githubusercontent.com/JanseJYC/Script/main/Django_Startup.ogg"
+local BACKGROUND_URL = "https://raw.githubusercontent.com/JanseJYC/Script/refs/heads/main/Django_Monochrome_Frontier.jpg"
+local STARTUP_AUDIO_URL = "https://github.com/JanseJYC/Script/raw/refs/heads/main/Django_Startup.ogg"
 
 local Library = loadstring(game:HttpGet(REPO .. "Library.lua"))()
 local Options = Library.Options
